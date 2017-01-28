@@ -9,7 +9,7 @@ SOCKET_PATH = '/tmp/foo'
 STREAM_HOST = '192.168.1.123'
 STREAM_PORT = 5001
 SINK_NAME = 'pipesink'
-RASPICAM_COMMAND = 'raspivid -t 0 -b 2000000 -fps 15 -w 640 -h 360 -o - | '
+RASPICAM_COMMAND = 'raspivid -t 0 -b 2000000 -fps 15 -w 640 -h 360 -np -o - | '
 
 import gi
 gi.require_version('Gst', '1.0')
