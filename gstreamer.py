@@ -68,7 +68,7 @@ def make_command_line_parsable(caps):
     out = struct.get_name()
 
     for i in range(struct.n_fields()):
-        capName = struct.get_name(i)
+        capName = struct.nth_field_name(i)
         capValue = struct.get_value(capName)
 
         out += ', {0}={1}'.format(capName, capValue)
