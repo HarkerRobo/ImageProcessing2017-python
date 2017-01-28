@@ -106,4 +106,3 @@ if __name__ == '__main__':
 
     caps = get_sink_caps(pipeline.get_by_name('pipesink'))
     print(make_command_line_parsable(caps))
-
