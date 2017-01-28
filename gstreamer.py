@@ -10,6 +10,7 @@ SOCKET_PATH = '/tmp/foo'
 STREAM_HOST = '192.168.1.123'
 STREAM_PORT = 5001
 SINK_NAME = 'pipesink'
+GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v '
 RASPICAM_COMMAND = 'raspivid -t 0 -b 2000000 -fps 15 -w 640 -h 360 -np -o - | '
 
 import gi
@@ -40,8 +41,7 @@ def webcam_streaming_command(host, port):
         'shmsink name={sink_name} socket-path={socket_path} '
         'sync=true wait-for-connection=false shm-size=10000000'
     ).format(host=host, port=port,
-        socket_path=SOCKET_PATH, sink_name=SINK_NAME
-    )
+             socket_path=SOCKET_PATH, sink_name=SINK_NAME)
 
 def webcam_streaming_pipeline(host, port):
     """
@@ -56,7 +56,8 @@ def raspicam_streaming_process(host, port):
     Creates a subprocess to stream the raspberry pi camera, outputting
     the same streams as the webcam.
     """
-    command = RASPICAM_COMMAND + 'gstreamer -v' + webcam_streaming_command(host, port)
+    command = (RASPICAM_COMMAND + GSTREAMER_LAUNCH_COMMAND +
+               webcam_streaming_command(host, port))
     return Popen(command, shell=True, stdout=PIPE)
 
 def get_caps_from_process_and_wait(proc):
