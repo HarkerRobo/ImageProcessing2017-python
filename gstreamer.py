@@ -10,7 +10,7 @@ SOCKET_PATH = '/tmp/foo'
 STREAM_HOST = '192.168.1.123'
 STREAM_PORT = 5001
 SINK_NAME = 'pipesink'
-GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v '
+GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v -e '
 RASPICAM_COMMAND = 'raspivid -t 0 -b 2000000 -fps 15 -w 640 -h 360 -n -o - | '
 
 import gi
@@ -56,8 +56,26 @@ def raspicam_streaming_process(host, port):
     Creates a subprocess to stream the raspberry pi camera, outputting
     the same streams as the webcam.
     """
-    command = (RASPICAM_COMMAND + GSTREAMER_LAUNCH_COMMAND +
-               webcam_streaming_command(host, port))
+    command = (
+        RASPICAM_COMMAND + GSTREAMER_LAUNCH_COMMAND +
+        # Get stream from raspivid process
+        'fdsrc ! h264parse ! '
+        # Copy the stream to two different outputs
+        'tee name=t ! queue ! '
+        # Convert to rtp packets
+        'rtph264pay pt=96 config-interval=5 ! '
+        # Stream over udp
+        'udpsink host={host} port={port} '
+        # Use other output
+        't. ! queue ! '
+        # Decode h.264
+        'omxh264dec ! '
+        # Put output in a shared memory location
+        'shmsink name={sink_name} socket-path={socket_path} '
+        'sync=true wait-for-connection=false shm-size=10000000'
+    ).format(host=host, port=port,
+             socket_path=SOCKET_PATH, sink_name=SINK_NAME)
+
     return Popen(command, shell=True, stdout=PIPE)
 
 def get_caps_from_process_and_wait(proc):
@@ -65,16 +83,21 @@ def get_caps_from_process_and_wait(proc):
     Gets the capture filters from the given process and waits for the
     pipeline to play
     """
-    caps = ''
+    caps = None
     while True:
         line = proc.stdout.readline().decode('utf-8')
-        if line == '': return
-        if line.strip() == 'Setting pipeline to PLAYING ...': return caps
+        if line == '':
+            return caps
+        if line.strip() == 'Setting pipeline to PLAYING ...':
+            return caps
 
         try:
-            find_str = SINK_NAME + '.GstGhostPad:sink: caps = '
-            raw_caps = line[line.index(find_str)+len(find_str):]
-            caps = re.sub(r'=\(.*?\)', '=', raw_caps).replace('\\', '')
+            find_str = SINK_NAME + '.GstPad:sink: caps = '
+            raw_caps = (line[line.index(find_str)+len(find_str):]
+                        .strip('"\n') # Remove surrounding quotes and newlines
+                        .replace('\\', '')) # Remove backslashes that occor on
+                                            # linux environments
+            caps = re.sub(r'=\(.*?\)', '=', raw_caps)
         except ValueError:
             pass
 
