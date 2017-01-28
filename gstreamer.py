@@ -67,6 +67,6 @@ if __name__ == '__main__':
     pipeline = Gst.parse_launch('autovideosrc ! glimagesink name=pipesink')
     pipeline.set_state(Gst.State.PLAYING)
 
-    print(pipeline.get_state())
+    print(pipeline.get_state(Gst.CLOCK_TIME_NONE))
     print(get_sink_caps(pipeline.get_by_name('pipesink')))
 
