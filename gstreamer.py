@@ -8,4 +8,5 @@ from gi.repository import Gst
 
 Gst.init()
 
-Gst.Pipeline.new("autovideosrc ! aasink")
+pipeline = Gst.Pipeline.new("autovideosrc ! glimagesink")
+pipeline.set_state(Gst.STATE_PLAYING)
