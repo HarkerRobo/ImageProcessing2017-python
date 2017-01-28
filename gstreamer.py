@@ -28,7 +28,7 @@ def webcam_streaming_command(host, port):
         # Use other output
         't. ! queue ! '
         # Put output in a shared memory location
-        'shmsink name=pipesink socket-path={socket_path}'
+        'shmsink name=pipesink socket-path={socket_path} '
         'sync=true wait-for-connection=false shm-size=10000000'
     ).format(host=host, port=port, socket_path=SOCKET_PATH)
 
