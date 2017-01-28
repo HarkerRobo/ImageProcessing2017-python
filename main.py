@@ -1,3 +1,8 @@
+"""
+For now this serves as a test program to perfect the vision pipeline and display results.
+Later we will have a server that communicates this information.
+"""
+
 import os
 import cv2
 import gstreamer as gs

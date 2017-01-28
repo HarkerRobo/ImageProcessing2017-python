@@ -1,11 +1,16 @@
+"""
+This file contains utilities for creating gstreamer processes for streaming camera outputs.
+"""
+
+import re
+from subprocess import Popen, PIPE
+
 SOCKET_PATH = '/tmp/foo'
 STREAM_HOST = '192.168.1.123'
 STREAM_PORT = 5001
 SINK_NAME = 'pipesink'
 RASPICAM_COMMAND = 'raspivid -t 0 -b 2000000 -fps 15 -w 640 -h 360 -o - | '
 
-import re
-from subprocess import Popen, PIPE
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst
@@ -63,7 +68,7 @@ def get_caps_from_process_and_wait(proc):
 
         try:
             find_str = SINK_NAME + '.GstGhostPad:sink: caps = '
-            raw_caps = line[line.index(findStr)+len(findStr):]
+            raw_caps = line[line.index(find_str)+len(find_str):]
             caps = re.sub(r'=\(.*?\)', '=', raw_caps).replace('\\', '')
         except ValueError:
             pass
@@ -126,11 +131,11 @@ def make_command_line_parsable(caps):
     return out
 
 if __name__ == '__main__':
-    pipeline = Gst.parse_launch('autovideosrc ! glimagesink name={0}'.format(SINK_NAME))
-    pipeline.set_state(Gst.State.PLAYING)
+    testPipeline = Gst.parse_launch('autovideosrc ! glimagesink name={0}'.format(SINK_NAME))
+    testPipeline.set_state(Gst.State.PLAYING)
 
     # TODO: Find a better method to wait for playback to start
-    pipeline.get_state(Gst.CLOCK_TIME_NONE) # Wait for the pipeline to start playing
+    testPipeline.get_state(Gst.CLOCK_TIME_NONE) # Wait for the pipeline to start playing
 
-    caps = get_sink_caps(pipeline.get_by_name(SINK_NAME))
-    print(make_command_line_parsable(caps))
+    testCaps = get_sink_caps(testPipeline.get_by_name(SINK_NAME))
+    print(make_command_line_parsable(testCaps))
