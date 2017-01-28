@@ -65,7 +65,7 @@ def get_sink_caps(element):
 
 def make_command_line_parsable(caps):
     struct = caps.get_structure(0)
-    out = caps.get_name()
+    out = struct.get_name()
 
     for i in range(struct.n_fields()):
         capName = struct.get_name(i)
