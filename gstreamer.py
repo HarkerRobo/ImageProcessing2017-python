@@ -63,6 +63,18 @@ def get_sink_caps(element):
     """
     return element.get_static_pad('sink').get_current_caps()
 
+def make_command_line_parsable(caps):
+    struct = caps.get_structure(0)
+    out = caps.get_name()
+
+    for i in range(struct.n_fields()):
+        capName = struct.get_name(i)
+        capValue = struct.get_value(capName)
+
+        out += ', {0}={1}'.format(capName, capValue)
+
+    return out
+
 if __name__ == '__main__':
     pipeline = Gst.parse_launch('autovideosrc ! glimagesink name=pipesink')
     pipeline.set_state(Gst.State.PLAYING)
@@ -70,5 +82,6 @@ if __name__ == '__main__':
     # TODO: Find a better method to wait for playback to start
     pipeline.get_state(Gst.CLOCK_TIME_NONE) # Wait for the pipeline to start playing
 
-    print(get_sink_caps(pipeline.get_by_name('pipesink')).to_string())
+    caps = get_sink_caps(pipeline.get_by_name('pipesink'))
+    print(make_command_line_parsable(caps))
 
