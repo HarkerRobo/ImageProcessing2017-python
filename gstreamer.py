@@ -66,7 +66,7 @@ def get_caps_from_process_and_wait(proc):
     """
     caps = ''
     while True:
-        line = proc.stdout.readline()
+        line = proc.stdout.readline().decode('utf-8')
         if line == '': return
         if line.strip() == 'Setting pipeline to PLAYING ...': return caps
 
