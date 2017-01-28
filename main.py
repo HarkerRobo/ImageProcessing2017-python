@@ -1,6 +1,7 @@
 """
-For now this serves as a test program to perfect the vision pipeline and display results.
-Later we will have a server that communicates this information.
+For now this serves as a test program to perfect the vision pipeline and
+display results. Later we will have a server that communicates this
+information.
 """
 
 import os
@@ -17,7 +18,7 @@ pipeline = gs.webcam_streaming_pipeline(gs.STREAM_HOST, gs.STREAM_PORT)
 pipeline.set_state(Gst.State.PLAYING)
 
 # TODO: Find a better method to wait for playback to start
-print(pipeline.get_state(Gst.CLOCK_TIME_NONE)) # Wait for the pipeline to start playing
+print(pipeline.get_state(Gst.CLOCK_TIME_NONE)) # Wait for pipeline to play
 
 caps = gs.get_sink_caps(pipeline.get_by_name(gs.SINK_NAME))
 cap_string = gs.make_command_line_parsable(caps)

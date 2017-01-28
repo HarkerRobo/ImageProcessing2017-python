@@ -1,0 +1,4 @@
+[MASTER]
+
+disable=C0103
+extension-pkg-whitelist=cv2,numpy
