@@ -1,5 +1,6 @@
 """
-This file contains utilities for creating gstreamer processes for streaming camera outputs.
+This file contains utilities for creating gstreamer processes for
+streaming camera outputs.
 """
 
 import re
@@ -18,9 +19,9 @@ Gst.init(None)
 
 def webcam_streaming_command(host, port):
     """
-    Creates the Gstreamer pipeline that takes in the vision webcam stream and
-    outputs both an h.264-encoded stream and a raw stream to a shared memory
-    location.
+    Creates the Gstreamer pipeline that takes in the vision webcam
+    stream and outputs both an h.264-encoded stream and a raw stream to
+    a shared memory location.
     """
     return (
         # Take in stream from webcam
@@ -38,27 +39,30 @@ def webcam_streaming_command(host, port):
         # Put output in a shared memory location
         'shmsink name={sink_name} socket-path={socket_path} '
         'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(host=host, port=port, socket_path=SOCKET_PATH, sink_name=SINK_NAME)
+    ).format(host=host, port=port,
+        socket_path=SOCKET_PATH, sink_name=SINK_NAME
+    )
 
 def webcam_streaming_pipeline(host, port):
     """
-    Creates the Gstreamer pipeline that takes in the vision webcam stream and
-    outputs both an h.264-encoded stream and a raw stream to a shared memory
-    location.
+    Creates the Gstreamer pipeline that takes in the vision webcam
+    stream and outputs both an h.264-encoded stream and a raw stream to
+    a shared memory location.
     """
     return Gst.parse_launch(webcam_streaming_command(host, port))
 
 def raspicam_streaming_process(host, port):
     """
-    Creates a subprocess to stream the raspberry pi camera, outputting the same
-    streams as the webcam.
+    Creates a subprocess to stream the raspberry pi camera, outputting
+    the same streams as the webcam.
     """
     command = RASPICAM_COMMAND + 'gstreamer -v' + webcam_streaming_command(host, port)
     return Popen(command, shell=True, stdout=PIPE)
 
 def get_caps_from_process_and_wait(proc):
     """
-    Gets the capture filters from the given process and waits for the pipeline to play
+    Gets the capture filters from the given process and waits for the
+    pipeline to play
     """
     caps = ''
     while True:
@@ -75,11 +79,11 @@ def get_caps_from_process_and_wait(proc):
 
 def webcam_loopback_command(caps):
     """
-    Creates the command used by opencv to parse the raw video from the shared
-    memory location, given capture filters.
+    Creates the command used by opencv to parse the raw video from the
+    shared memory location, given capture filters.
 
-    These capture filters are needed as opencv needs to know how to parse what
-    is at the memory location (e.g. width and height).
+    These capture filters are needed as opencv needs to know how to
+    parse what is at the memory location (e.g. width and height).
     """
     return (
         'shmsrc socket-path={socket_path} ! '
@@ -88,19 +92,19 @@ def webcam_loopback_command(caps):
 
 def get_sink_caps(element):
     """
-    Returns the negotiated capture filters of a given element's sink connection
-    (i.e. what is outputted by the element).
+    Returns the negotiated capture filters of a given element's sink
+    connection (i.e. what is outputted by the element).
 
-    Because these capture filters will be negotiated, this method must be used
-    after the pipeline is playing.
+    Because these capture filters will be negotiated, this method must
+    be used after the pipeline is playing.
     """
     return element.get_static_pad('sink').get_current_caps()
 
 def get_cap_value_by_name(caps, name):
     """
     For some reason getValue(name) works for every data type except
-    fractions, so a bit more work needs to be done to get a capture filter by
-    its name.
+    fractions, so a bit more work needs to be done to get a capture
+    filter by its name.
     """
     try:
         return caps.get_value(name)
@@ -110,13 +114,14 @@ def get_cap_value_by_name(caps, name):
 
 def make_command_line_parsable(caps):
     """
-    A Cap object's toString method returns something very close to what this
-    method returns, but the outputted string also contains types in parenthesis
-    (e.g. width=(int)320). This method returns that string, but without the type
-    and parenthesis.
+    A Cap object's toString method returns something very close to what
+    this method returns, but the outputted string also contains types in
+    parenthesis (e.g. width=(int)320). This method returns that string,
+    but without the type and parenthesis.
 
-    One could just use regex to find all ocurrences of \(.*?\), but that would
-    run into problems if the enclosed strings contained parenthesis.
+    One could just use regex to find all ocurrences of \(.*?\), but that
+    would run into problems if the enclosed strings contained
+    parenthesis.
     """
 
     struct = caps.get_structure(0)
@@ -131,11 +136,13 @@ def make_command_line_parsable(caps):
     return out
 
 if __name__ == '__main__':
-    testPipeline = Gst.parse_launch('autovideosrc ! glimagesink name={0}'.format(SINK_NAME))
+    testPipeline = Gst.parse_launch(
+        'autovideosrc ! glimagesink name={0}'.format(SINK_NAME)
+    )
     testPipeline.set_state(Gst.State.PLAYING)
 
     # TODO: Find a better method to wait for playback to start
-    testPipeline.get_state(Gst.CLOCK_TIME_NONE) # Wait for the pipeline to start playing
+    testPipeline.get_state(Gst.CLOCK_TIME_NONE) # Wait for pipeline to play
 
     testCaps = get_sink_caps(testPipeline.get_by_name(SINK_NAME))
     print(make_command_line_parsable(testCaps))
