@@ -85,16 +85,22 @@ def get_caps_from_process_and_wait(proc):
     """
     caps = None
     while True:
-        line = proc.stdout.readline().decode('utf-8')
+        line = proc.stdout.readline().decode('utf-8').strip()
+        # Messages about caps will contain pipeline0 since that is the name of
+        # the pipeline. To be less verbose, these messages are not printed.
+        if 'pipeline0' not in line:
+            print(line)
         if line == '':
-            return caps
+            # This happens when the process is done printing out stuff. The
+            # program returns here as to not enter an infinite loop
+            return
         if line.strip() == 'Setting pipeline to PLAYING ...':
             return caps
 
         try:
             find_str = SINK_NAME + '.GstPad:sink: caps = '
             raw_caps = (line[line.index(find_str)+len(find_str):]
-                        .strip('"\n') # Remove surrounding quotes and newlines
+                        .strip('"') # Remove surrounding quotes if any
                         .replace('\\', '')) # Remove backslashes that occor on
                                             # linux environments
             caps = re.sub(r'=\(.*?\)', '=', raw_caps)

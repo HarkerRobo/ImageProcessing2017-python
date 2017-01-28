@@ -36,3 +36,7 @@ while True:
     cv2.imshow('frame', img)
     if cv2.waitKey(1) == ord('q'):
         break
+
+# TODO I cannot think of any way to kill GStreamer through the process given by
+# raspicam_streaming_process. Ideally it would be nice to use something nicer.
+os.system('killall gst-launch-1.0')
