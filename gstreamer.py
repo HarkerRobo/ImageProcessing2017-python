@@ -1,8 +1,11 @@
 SOCKET_PATH = '/tmp/foo'
-STREAM_HOST = '169.254.84.224'
+STREAM_HOST = '192.168.1.123'
 STREAM_PORT = 5001
+SINK_NAME = 'pipesink'
+RASPICAM_COMMAND = 'raspivid -t 0 -b 2000000 -fps 15 -w 640 -h 360 -o - | '
 
-import time
+import re
+from subprocess import Popen, PIPE
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst
@@ -28,9 +31,9 @@ def webcam_streaming_command(host, port):
         # Use other output
         't. ! queue ! '
         # Put output in a shared memory location
-        'shmsink name=pipesink socket-path={socket_path} '
+        'shmsink name={sink_name} socket-path={socket_path} '
         'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(host=host, port=port, socket_path=SOCKET_PATH)
+    ).format(host=host, port=port, socket_path=SOCKET_PATH, sink_name=SINK_NAME)
 
 def webcam_streaming_pipeline(host, port):
     """
@@ -39,6 +42,31 @@ def webcam_streaming_pipeline(host, port):
     location.
     """
     return Gst.parse_launch(webcam_streaming_command(host, port))
+
+def raspicam_streaming_process(host, port):
+    """
+    Creates a subprocess to stream the raspberry pi camera, outputting the same
+    streams as the webcam.
+    """
+    command = RASPICAM_COMMAND + 'gstreamer -v' + webcam_streaming_command(host, port)
+    return Popen(command, shell=True, stdout=PIPE)
+
+def get_caps_from_process_and_wait(proc):
+    """
+    Gets the capture filters from the given process and waits for the pipeline to play
+    """
+    caps = ''
+    while True:
+        line = proc.stdout.readline()
+        if line == '': return
+        if line.strip() == 'Setting pipeline to PLAYING ...': return caps
+
+        try:
+            find_str = SINK_NAME + '.GstGhostPad:sink: caps = '
+            raw_caps = line[line.index(findStr)+len(findStr):]
+            caps = re.sub(r'=\(.*?\)', '=', raw_caps).replace('\\', '')
+        except ValueError:
+            pass
 
 def webcam_loopback_command(caps):
     """
@@ -98,11 +126,11 @@ def make_command_line_parsable(caps):
     return out
 
 if __name__ == '__main__':
-    pipeline = Gst.parse_launch('autovideosrc ! glimagesink name=pipesink')
+    pipeline = Gst.parse_launch('autovideosrc ! glimagesink name={0}'.format(SINK_NAME))
     pipeline.set_state(Gst.State.PLAYING)
 
     # TODO: Find a better method to wait for playback to start
     pipeline.get_state(Gst.CLOCK_TIME_NONE) # Wait for the pipeline to start playing
 
-    caps = get_sink_caps(pipeline.get_by_name('pipesink'))
+    caps = get_sink_caps(pipeline.get_by_name(SINK_NAME))
     print(make_command_line_parsable(caps))
