@@ -67,6 +67,8 @@ if __name__ == '__main__':
     pipeline = Gst.parse_launch('autovideosrc ! glimagesink name=pipesink')
     pipeline.set_state(Gst.State.PLAYING)
 
-    print(pipeline.get_state(Gst.CLOCK_TIME_NONE))
-    print(get_sink_caps(pipeline.get_by_name('pipesink')))
+    # TODO: Find a better method to wait for playback to start
+    pipeline.get_state(Gst.CLOCK_TIME_NONE) # Wait for the pipeline to start playing
+
+    print(get_sink_caps(pipeline.get_by_name('pipesink')).to_string())
 
