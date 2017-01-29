@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import time
-import gearcontours
+from . import gearcontours
 
 def transform(img):
     corners = gearcontours.process_image(cv2.imread("sampleImages/img.png"))

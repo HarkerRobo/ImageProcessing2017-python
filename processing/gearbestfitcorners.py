@@ -4,7 +4,7 @@ Finds the corners of the gear pieces of tape by using best fit lines
 
 import cv2
 import numpy as np
-from tapecontours import *
+from .tapecontours import *
 
 DEBUG = True
 

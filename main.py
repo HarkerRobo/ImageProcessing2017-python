@@ -7,7 +7,7 @@ information.
 import os
 import cv2
 import gstreamer as gs
-from gearcontours import process_image
+from processing.gearcontours import process_image
 Gst = gs.Gst
 
 try:
