@@ -33,7 +33,7 @@ def raspicam_command(iso=ISO, shutter=SHUTTER_SPEED):
         'raspivid --timeout 0 ' # No timeout
         '--bitrate 2000000 ' # 2 Mbps bitrate (after h.264 encoding)
         '--framerate 15 '
-        '--width 640 --height 360 '
+        '--width 640 --height 480 '
         '--ev -1 '
         '--exposure off ' # Turn off auto exposure
         '--ISO {iso} ' # 1200 ISO
