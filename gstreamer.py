@@ -3,6 +3,7 @@ This file contains utilities for creating gstreamer processes for
 streaming camera outputs.
 """
 
+import os
 import re
 from subprocess import Popen, PIPE
 import gi
@@ -18,6 +19,14 @@ SHUTTER_SPEED = 2000
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst
 Gst.init(None)
+
+def delete_socket():
+    """Deletes the file that is used for communication for the shared
+    memory location"""
+    try:
+        os.remove(gs.SOCKET_PATH)
+    except FileNotFoundError:
+        pass
 
 def raspicam_command(iso=ISO, shutter=SHUTTER_SPEED):
     """

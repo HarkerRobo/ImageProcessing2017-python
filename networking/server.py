@@ -30,7 +30,7 @@ def broadcast(server_socket, clients, message):
     """
     for i in clients:
         if i is not server_socket:
-            i.send(message)
+            i.send(message.encode('utf-8'))
 
 def AcceptClients(server_socket, clients, on_new_message):
     """
@@ -54,7 +54,7 @@ def AcceptClients(server_socket, clients, on_new_message):
                 data = x.recv(SIZE)
                 if data:
                     # Client has sent something
-                    on_new_message(x, data)
+                    on_new_message(x, data.decode('utf-8'))
                 else:
                     # Client has disconnected
                     x.close()
@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     try:
         while True:
-            broadcast(sock, clis, b'hi\n')
+            broadcast(sock, clis, 'hi\n')
             time.sleep(1)
     except KeyboardInterrupt:
         pass

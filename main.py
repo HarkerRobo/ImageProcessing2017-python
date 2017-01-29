@@ -4,16 +4,14 @@ display results. Later we will have a server that communicates this
 information.
 """
 
-import os
+import threading
 import cv2
 import gstreamer as gs
+import networking
 from processing.gearcontours import process_image
 Gst = gs.Gst
 
-try:
-    os.remove(gs.SOCKET_PATH)
-except FileNotFoundError:
-    pass
+gs.delete_socket()
 
 # Code for using raspivid command below
 # process = gs.raspicam_streaming_process(gs.STREAM_HOST, gs.STREAM_PORT)
@@ -32,12 +30,21 @@ cap_string = gs.make_command_line_parsable(caps)
 
 cap = cv2.VideoCapture(gs.webcam_loopback_command(cap_string))
 
+# Set up server
+sock, clis = networking.server.create_socket_and_client_list()
+handler = networking.create_gst_handler(gs, pipeline)
+
+acceptThread = threading.Thread(target=networking.server.AcceptClients,
+                                args=[sock, clis, handler])
+acceptThread.start()
+
 while True:
     _, img = cap.read()
     cv2.imshow('frame', img)
     process_image(img)
     cv2.imwrite('img.png', img)
     if cv2.waitKey(1) == ord('q'):
+        sock.close()
         break
 
 # If you are using the raspivid command for streaming video from the
@@ -45,4 +52,4 @@ while True:
 # think of any way to kill GStreamer through the process given by
 # raspicam_streaming_process, however, so ideally it would be nice to
 # use something nicer.
-os.system('killall gst-launch-1.0')
+# os.system('killall gst-launch-1.0')
