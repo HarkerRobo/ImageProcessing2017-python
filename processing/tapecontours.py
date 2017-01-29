@@ -15,7 +15,7 @@ TARGET_SCALE = 10
 TARGET_WIDTH = 10.25 * TARGET_SCALE
 TARGET_HEIGHT = 5 * TARGET_SCALE
 
-DEBUG = True
+DEBUG = True # Makes applicable functions show debugging images by default
 
 def corners_to_tuples(corners):
     """Converts a given array of corners to an array of tuples"""
@@ -116,7 +116,19 @@ def get_tape_contours_and_corners(mask, debug_img=None):
             if len(found_contours) == 2:
                 break
 
-    if DEBUG:
+    if debug_img is not None:
         cv2.drawContours(debug_img, found_contours, -1, (255, 0, 0), 1)
 
     return found_contours, found_corners
+
+def get_corners_from_image(img, show_image=DEBUG):
+    """Return an array of the corners of the tape in a given image."""
+    debug_img = img.copy if show_image else None
+
+    mask = get_mask(img)
+    _, crns = get_tape_contours_and_corners(mask, debug_img)
+
+    if show_image:
+        cv2.imshow('corners', debug_img)
+
+    return crns
