@@ -8,7 +8,7 @@ import threading
 import cv2
 import gstreamer as gs
 import networking
-from processing.gearcontours import process_image
+from processing.tapecontours import get_mask, get_tape_contours_and_corners
 Gst = gs.Gst
 
 gs.delete_socket()
@@ -40,9 +40,10 @@ acceptThread.start()
 
 while True:
     _, img = cap.read()
-    cv2.imshow('frame', img)
-    process_image(img)
-    cv2.imwrite('img.png', img)
+    cv2.imshow('original', img)
+    mask = get_mask(img)
+    cnts, crns = get_tape_contours_and_corners(mask, img)
+    cv2.imshow('processed', img)
     if cv2.waitKey(1) == ord('q'):
         sock.close()
         break
