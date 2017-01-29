@@ -7,7 +7,7 @@ def transform(img):
     corners = gearcontours.process_image(cv2.imread("sampleImages/img.png"))
     vcts = []
     corners2 = gearcontours.process_image(cv2.imread("pic.jpg"))
-    # for corner in corners:
+    # for corner in coners:
 
     left_first = []
     for subcorner in corners[0]:
