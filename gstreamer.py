@@ -5,20 +5,44 @@ streaming camera outputs.
 
 import re
 from subprocess import Popen, PIPE
+import gi
 
 SOCKET_PATH = '/tmp/foo'
 STREAM_HOST = '192.168.1.123'
 STREAM_PORT = 5001
 SINK_NAME = 'pipesink'
 GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v -e '
-RASPICAM_COMMAND = 'raspivid -t 0 -b 2000000 -fps 15 -w 640 -h 360 -n -o - | '
+ISO = 100
+SHUTTER_SPEED = 2000
 
-import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst
 Gst.init(None)
 
-def webcam_streaming_command(host, port):
+def raspicam_command(iso=ISO, shutter=SHUTTER_SPEED):
+    """
+    Creates the command to generate h.264-encoded video from the
+    Raspberry Pi camera and output it to stdout.
+
+    However, for some reason, setting a low shutterspeed makes the
+    stream very slow. Therefore, this function is deprecated and using a
+    pipeline via the gstreamer api with the raspicam_streaming_pipeline
+    is prefered.
+    """
+    return (
+        'raspivid --timeout 0 ' # No timeout
+        '--bitrate 2000000 ' # 2 Mbps bitrate (after h.264 encoding)
+        '--framerate 15 '
+        '--width 640 --height 360 '
+        '--ev -1 '
+        '--exposure off ' # Turn off auto exposure
+        '--ISO {iso} ' # 1200 ISO
+        '--shutter {shutter} ' # 2 millisecond shutterspeed
+        '-n ' # No preview on HDMI output
+        '-o - | ' # Stream to pipe
+    ).format(shutter=shutter, iso=iso)
+
+def webcam_streaming_command(host=STREAM_HOST, port=STREAM_PORT):
     """
     Creates the Gstreamer pipeline that takes in the vision webcam
     stream and outputs both an h.264-encoded stream and a raw stream to
@@ -43,7 +67,7 @@ def webcam_streaming_command(host, port):
     ).format(host=host, port=port,
              socket_path=SOCKET_PATH, sink_name=SINK_NAME)
 
-def webcam_streaming_pipeline(host, port):
+def webcam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT):
     """
     Creates the Gstreamer pipeline that takes in the vision webcam
     stream and outputs both an h.264-encoded stream and a raw stream to
@@ -51,13 +75,53 @@ def webcam_streaming_pipeline(host, port):
     """
     return Gst.parse_launch(webcam_streaming_command(host, port))
 
-def raspicam_streaming_process(host, port):
+def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
+                               iso=ISO, shutter=SHUTTER_SPEED):
+    """
+    Creates the Gstreamer pipeline that takes in the Raspberry pi camera
+    stream and outputs both an h.264-encoded stream and a raw stream to
+    a shared memory location.
+    """
+    return (
+        # Take in stream from wraspberry pi camera
+        'rpicamsrc preview=false exposure-mode=0 '
+        'iso={iso} shutter-speed={shutter} ! '
+        'video/x-raw, format=I420, width=640, height=320, framerate=15/1 ! '
+        # Copy the stream to two different outputs
+        'tee name=t ! queue ! '
+        # Encode one output to h.264
+        'omxh264enc ! h264parse ! '
+        # Convert to rtp packets
+        'rtph264pay pt=96 config-interval=5 ! '
+        # Stream over udp
+        'udpsink host={host} port={port} '
+        # Use other output
+        't. ! queue ! '
+        # Put output in a shared memory location
+        'shmsink name={sink_name} socket-path={socket_path} '
+        'sync=true wait-for-connection=false shm-size=10000000'
+    ).format(host=host, port=port, socket_path=SOCKET_PATH,
+        sink_name=SINK_NAME, iso=iso, shutter=shutter)
+
+def raspicam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT,
+                                iso=ISO, shutter=SHUTTER_SPEED):
+    """
+    Creates the Gstreamer pipeline that takes in the Raspberry Pi camera
+    stream and outputs both an h.264-encoded stream and a raw stream to
+    a shared memory location.
+    """
+    return Gst.parse_launch(
+        raspicam_streaming_command(host, port, iso, shutter))
+
+def raspicam_streaming_process(host=STREAM_HOST, port=STREAM_PORT,
+                               iso=ISO, shutter=SHUTTER_SPEED):
     """
     Creates a subprocess to stream the raspberry pi camera, outputting
     the same streams as the webcam.
     """
     command = (
-        RASPICAM_COMMAND + GSTREAMER_LAUNCH_COMMAND +
+        raspicam_command(iso, shutter) + GSTREAMER_LAUNCH_COMMAND +
+        'rpicamsrc'
         # Get stream from raspivid process
         'fdsrc ! h264parse ! '
         # Copy the stream to two different outputs
