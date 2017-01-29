@@ -29,7 +29,7 @@ def transform(img):
         for subsubcorner in subcorner:
             left_second.append([subsubcorner[0], subsubcorner[1]])
 
-e
+
     # print(corners[0][0])
     # print(np.array_type(corners[0]))
     try:
