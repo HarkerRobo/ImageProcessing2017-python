@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import time
-from matplotlib import pyplot as plt
 
 def process_image(img):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
