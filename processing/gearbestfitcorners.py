@@ -1,5 +1,11 @@
 """
 Finds the corners of the gear pieces of tape by using best fit lines
+
+This module is currently not being used by anything as opencv's
+findHomography function can take in an arbitrary number of points.abs
+
+However, if we cannot get this to work, this may come in handy when we
+use trig to estimate angles.
 """
 
 import cv2
