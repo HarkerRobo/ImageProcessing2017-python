@@ -9,11 +9,13 @@ LOW_GREEN = np.array([60, 100, 20])
 UPPER_GREEN = np.array([80, 255, 255])
 MIN_PERCENT = 0.9 # After the first rectangle is detected, the second
                   # rectangle's area must be above this percent of the first's
-# Tape area is 10-1/4 in by 5 in
 
+# Tape area is 10-1/4 in by 5 in
 TARGET_SCALE = 10
 TARGET_WIDTH = 10.25 * TARGET_SCALE
 TARGET_HEIGHT = 5 * TARGET_SCALE
+
+DEBUG = True
 
 def corners_to_tuples(corners):
     """Converts a given array of corners to an array of tuples"""
@@ -69,9 +71,7 @@ def get_intersection_point(l1, l2):
     return (x, y)
 
 def get_target_corners(img):
-    """Returns what should be the corners of the target for the given
-    image
-    """
+    """Returns the points of the optimal target position for a given image"""
     h, w, _ = img.shape
     return (
         (w/2 + TARGET_WIDTH/2, h/2 - TARGET_HEIGHT/2),
@@ -80,23 +80,29 @@ def get_target_corners(img):
         (w/2 - TARGET_WIDTH/2, h/2 - TARGET_HEIGHT/2)
     )
 
-def process_image(img):
-    debugImg = img.copy()
-
+def get_mask(img):
+    """Returns a mask were the green parts of the image are white and
+    the non-green parts are black
+    """
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, LOW_GREEN, UPPER_GREEN)
+    return mask
+
+def get_tape_contours_and_corners(mask, debug_img=None):
+    """Returns an array of contours for the pieces of tape in a given
+    mask as well as the corners for each of those contours"""
 
     _, cnt, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    sortedContours = sorted(cnt, key=cv2.contourArea, reverse=True)
-    foundContours = []
-    foundCorners = []
+    sorted_contours = sorted(cnt, key=cv2.contourArea, reverse=True)
+    found_contours = []
+    found_corners = []
 
-    for c in sortedContours:
+    for c in sorted_contours:
         # If the current contour is too small compared to the found
         # contour to be a piece of tape, discard it
-        if len(foundContours) == 1:
-            ratio = cv2.contourArea(c) / cv2.contourArea(foundContours[0])
+        if len(found_contours) == 1:
+            ratio = cv2.contourArea(c) / cv2.contourArea(found_contours[0])
             if ratio <= MIN_PERCENT:
                 break
         # Check if the countour has four courners
@@ -104,32 +110,13 @@ def process_image(img):
         approx = cv2.approxPolyDP(c, 0.02 * perimeter, True)
         # If it does save it
         if len(approx) == 4:
-            foundContours.append(c)
-            foundCorners.append(approx)
+            found_contours.append(c)
+            found_corners.append(corners_to_tuples(approx))
             # If there are already 2 rectangles then break
-            if len(foundContours) == 2:
+            if len(found_contours) == 2:
                 break
 
-    cv2.drawContours(debugImg, foundContours, -1, (255, 0, 0), 1)
+    if DEBUG:
+        cv2.drawContours(debug_img, found_contours, -1, (255, 0, 0), 1)
 
-    return foundCorners
-    for rectangle in foundCorners:
-        for corner in rectangle:
-            cv2.circle(debugImg, tuple(corner[0]), 3, (0, 0, 255))
-
-
-    print(foundContours)
-
-    cv2.imshow('Processed', debugImg)
-
-    print(corners)
-    transform = cv2.findHomography(get_target_corners(img), corners)
-    print(transform)
-
-    cv2.imshow('Processed', debug_img)
-
-if __name__ == '__main__':
-    im = cv2.imread('sampleImages/img.png')
-    cv2.imshow('Original', im)
-    process_image(im)
-    cv2.waitKey(0)
+    return found_contours, found_corners
