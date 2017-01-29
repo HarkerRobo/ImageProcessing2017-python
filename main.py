@@ -7,6 +7,7 @@ information.
 import os
 import cv2
 import gstreamer as gs
+import gearalign
 Gst = gs.Gst
 
 try:
@@ -34,6 +35,7 @@ cap = cv2.VideoCapture(gs.webcam_loopback_command(cap_string))
 while True:
     _, img = cap.read()
     cv2.imshow('frame', img)
+    gearalign.process_image(img)
     if cv2.waitKey(1) == ord('q'):
         break
 
