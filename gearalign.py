@@ -50,7 +50,6 @@ def process_image(img):
     out[dst>0.01*dst.max()] = [0,0,255]
     cv2.imshow("CURRENTFIN", out)
 
-    cv2.waitKey(0)
-
 if __name__ == '__main__':
     process_image(cv2.imread("pic.jpg"))
+    cv2.waitKey(0)
