@@ -1,12 +1,12 @@
 import cv2
 import numpy as np
 import time
-from . import gearcontours
+from .tapecontours import get_corners_from_image
 
 def transform(img):
-    corners = gearcontours.process_image(cv2.imread("sampleImages/img.png"))
+    corners = get_corners_from_image(cv2.imread("sampleImages/img.png"))
     vcts = []
-    corners2 = gearcontours.process_image(cv2.imread("pic.jpg"))
+    corners2 = get_corners_from_image(cv2.imread("pic.jpg"))
     # for corner in corners:
 
     left_first = []
