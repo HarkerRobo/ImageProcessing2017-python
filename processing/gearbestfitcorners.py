@@ -15,7 +15,46 @@ need to check for this case.
 
 import cv2
 import numpy as np
-from .tapecontours import *
+from .drawing import draw_corners, draw_line
+from .tapecontours import get_corners_from_image
+
+def get_corner_line(corners):
+    """Return the best fit line for an array of corners.
+
+    This function returns an tuple of (m, b), where the best fit line is
+    represented by y = mx + b.
+    """
+    corner_xs = [c[0] for c in corners]
+    corner_ys = [c[1] for c in corners]
+    return tuple(np.polyfit(x=corner_xs, y=corner_ys, deg=1))
+
+def get_two_corner_line(corners):
+    """Return the line that contains the two given corners.
+
+    This function returns an tuple of (m, b), where the best fit line is
+    represented by y = mx + b.
+    """
+    x1, y1 = corners[0]
+    x2, y2 = corners[1]
+
+    m = (y1 - y2) / (x1 - x2)
+    # Since y - y1 = m(x - x1)
+    #       y = m(x - x1) + y1
+    #       y = mx - mx1 + y1
+    b = -m * x1 + y1
+    return (m, b)
+
+def get_intersection_point(l1, l2):
+    """Return the point of intersection between two lines."""
+    m, b = l1
+    n, c = l2
+    # Find when mx + b = nx + c
+    #           mx - nx = c - b
+    #           And...
+    x = (c-b) / (m-n)
+    # Then plug back in
+    y = m*x + b
+    return (x, y)
 
 getX = lambda c: c[0]
 getY = lambda c: c[1]
@@ -82,8 +121,8 @@ def get_outside_corners(tape_corners, debug_img=None):
 if __name__ == '__main__':
     im = cv2.imread('sampleImages/img.png')
     cv2.imshow('Original', im)
-    mask = get_mask(im)
-    cnts, crns = get_tape_contours_and_corners(mask, im)
+
+    crns = get_corners_from_image(im, show_image=False)
     get_outside_corners(crns, im)
 
     cv2.imshow('Processsed', im)

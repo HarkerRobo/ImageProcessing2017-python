@@ -6,6 +6,7 @@ intersect each other.
 
 import cv2
 import numpy as np
+from .drawing import draw_corners
 
 LOW_GREEN = np.array([60, 100, 20])
 UPPER_GREEN = np.array([80, 255, 255])
@@ -22,55 +23,6 @@ DEBUG = True # Makes applicable functions show debugging images by default
 def corners_to_tuples(corners):
     """Convert a given array of corners to an array of tuples."""
     return [tuple(c[0]) for c in corners]
-
-def draw_corners(img, corners, color):
-    """Draw corners as circles on an image."""
-    for corner in corners:
-        cv2.circle(img, tuple(corner), 3, color)
-
-def draw_line(img, line, color):
-    """Draw a line of (m, b) on an image."""
-    m, b = line
-    w = img.shape[1]
-    cv2.line(img, (0, int(b)), (w, int(m*w + b)), color)
-
-def get_corner_line(corners):
-    """Return the best fit line for an array of corners.
-
-    This function returns an tuple of (m, b), where the best fit line is
-    represented by y = mx + b.
-    """
-    corner_xs = [c[0] for c in corners]
-    corner_ys = [c[1] for c in corners]
-    return tuple(np.polyfit(x=corner_xs, y=corner_ys, deg=1))
-
-def get_two_corner_line(corners):
-    """Return the line that contains the two given corners.
-
-    This function returns an tuple of (m, b), where the best fit line is
-    represented by y = mx + b.
-    """
-    x1, y1 = corners[0]
-    x2, y2 = corners[1]
-
-    m = (y1 - y2) / (x1 - x2)
-    # Since y - y1 = m(x - x1)
-    #       y = m(x - x1) + y1
-    #       y = mx - mx1 + y1
-    b = -m * x1 + y1
-    return (m, b)
-
-def get_intersection_point(l1, l2):
-    """Return the point of intersection between two lines."""
-    m, b = l1
-    n, c = l2
-    # Find when mx + b = nx + c
-    #           mx - nx = c - b
-    #           And...
-    x = (c-b) / (m-n)
-    # Then plug back in
-    y = m*x + b
-    return (x, y)
 
 def get_target_corners(img):
     """Return the points of the optimal target position for a given
@@ -122,6 +74,7 @@ def get_tape_contours_and_corners(mask, debug_img=None):
 
     if debug_img is not None:
         cv2.drawContours(debug_img, found_contours, -1, (255, 0, 0), 1)
+        draw_corners(debug_img, found_corners, (255, 0, 0))
 
     return found_contours, found_corners
 
