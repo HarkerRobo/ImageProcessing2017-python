@@ -45,7 +45,7 @@ MESSAGES = {
 }
 
 def parse_message(message_str):
-    """Takes in a message as a string, validates it, and outputs json
+    """Take in a message as a string, validate it, and output json.
 
     While this function will raise a ValueError if the message is
     missing required fields, it will not throw any errors if it includes
@@ -70,6 +70,6 @@ def parse_message(message_str):
     return message
 
 def create_message(message_type, fields):
-    """Creates a message string from a given tyoe and fields"""
+    """Create a message string from a given tyoe and fields."""
     message = dict({FIELD_TYPE: message_type}, **fields)
     return json.dumps(message)

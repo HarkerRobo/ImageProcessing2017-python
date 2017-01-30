@@ -1,5 +1,5 @@
 """
-Code to launch the tcp socket server that will both manage streaming and
+Code to launch the TCP socket server that will both manage streaming and
 send image processing results to the roborio
 """
 
@@ -15,8 +15,8 @@ SIZE = 1024 # Maximum message size
 
 def create_socket_and_client_list():
     """
-    Creates a socket that listens on the port and host specified as
-    constants then returns the socket and an arrray for clients.
+    Create a socket that listens on the port and host specified as
+    constants then return the socket and an arrray for clients.
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((HOST, PORT))
@@ -26,7 +26,7 @@ def create_socket_and_client_list():
 
 def broadcast(server_socket, clients, message):
     """
-    Sends a message to all given clients.
+    Send a message to all given clients.
     """
     for i in clients:
         if i is not server_socket:
@@ -34,7 +34,7 @@ def broadcast(server_socket, clients, message):
 
 def AcceptClients(server_socket, clients, on_new_message):
     """
-    Accepts connections from clients, calling a given function when a
+    Accept connections from clients, calling a given function when a
     new message is received. This function should take two parameters -
     the socket that sent the data and the data that was sent.
 

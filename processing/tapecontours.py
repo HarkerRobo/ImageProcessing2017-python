@@ -1,5 +1,7 @@
 """
-This should do the same thing as gearalign.py, but using contours
+This module uses contours to detect the pieces of tape in an image.
+These pieces of tape are assumed to be quadrilaterals, and should not
+intersect each other.
 """
 
 import cv2
@@ -18,22 +20,22 @@ TARGET_HEIGHT = 5 * TARGET_SCALE
 DEBUG = True # Makes applicable functions show debugging images by default
 
 def corners_to_tuples(corners):
-    """Converts a given array of corners to an array of tuples"""
+    """Convert a given array of corners to an array of tuples."""
     return [tuple(c[0]) for c in corners]
 
 def draw_corners(img, corners, color):
-    """Draws corners as circles on an image"""
+    """Draw corners as circles on an image."""
     for corner in corners:
         cv2.circle(img, tuple(corner), 3, color)
 
 def draw_line(img, line, color):
-    """Draws a line of (m, b) on an image"""
+    """Draw a line of (m, b) on an image."""
     m, b = line
     w = img.shape[1]
     cv2.line(img, (0, int(b)), (w, int(m*w + b)), color)
 
 def get_corner_line(corners):
-    """Returns the best fit line for an array of corners.
+    """Return the best fit line for an array of corners.
 
     This function returns an tuple of (m, b), where the best fit line is
     represented by y = mx + b.
@@ -43,7 +45,7 @@ def get_corner_line(corners):
     return tuple(np.polyfit(x=corner_xs, y=corner_ys, deg=1))
 
 def get_two_corner_line(corners):
-    """Returns the line that contains the two given corners.
+    """Return the line that contains the two given corners.
 
     This function returns an tuple of (m, b), where the best fit line is
     represented by y = mx + b.
@@ -59,7 +61,7 @@ def get_two_corner_line(corners):
     return (m, b)
 
 def get_intersection_point(l1, l2):
-    """Returns the point of intersection between two lines"""
+    """Return the point of intersection between two lines."""
     m, b = l1
     n, c = l2
     # Find when mx + b = nx + c
@@ -71,7 +73,9 @@ def get_intersection_point(l1, l2):
     return (x, y)
 
 def get_target_corners(img):
-    """Returns the points of the optimal target position for a given image"""
+    """Return the points of the optimal target position for a given
+    image.
+    """
     h, w, _ = img.shape
     return (
         (w/2 + TARGET_WIDTH/2, h/2 - TARGET_HEIGHT/2),
@@ -81,16 +85,16 @@ def get_target_corners(img):
     )
 
 def get_mask(img):
-    """Returns a mask were the green parts of the image are white and
-    the non-green parts are black
+    """Return a mask were the green parts of the image are white and the
+    non-green parts are black.
     """
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, LOW_GREEN, UPPER_GREEN)
     return mask
 
 def get_tape_contours_and_corners(mask, debug_img=None):
-    """Returns an array of contours for the pieces of tape in a given
-    mask as well as the corners for each of those contours"""
+    """Return an array of contours for the pieces of tape in a given
+    mask as well as the corners for each of those contours."""
 
     _, cnt, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 

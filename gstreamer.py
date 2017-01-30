@@ -21,8 +21,8 @@ from gi.repository import Gst
 Gst.init(None)
 
 def delete_socket():
-    """Deletes the file that is used for communication for the shared
-    memory location"""
+    """Delete the file that is used for communication for the shared
+    memory location."""
     try:
         os.remove(gs.SOCKET_PATH)
     except FileNotFoundError:
@@ -30,7 +30,7 @@ def delete_socket():
 
 def raspicam_command(iso=ISO, shutter=SHUTTER_SPEED):
     """
-    Creates the command to generate h.264-encoded video from the
+    Return the command to generate h.264-encoded video from the
     Raspberry Pi camera and output it to stdout.
 
     However, for some reason, setting a low shutterspeed makes the
@@ -53,9 +53,9 @@ def raspicam_command(iso=ISO, shutter=SHUTTER_SPEED):
 
 def webcam_streaming_command(host=STREAM_HOST, port=STREAM_PORT):
     """
-    Creates the Gstreamer pipeline that takes in the vision webcam
-    stream and outputs both an h.264-encoded stream and a raw stream to
-    a shared memory location.
+    Return the Gstreamer pipeline that takes in the vision webcam stream
+    and outputs both an h.264-encoded stream and a raw stream to a
+    shared memory location.
     """
     return (
         # Take in stream from webcam
@@ -78,16 +78,16 @@ def webcam_streaming_command(host=STREAM_HOST, port=STREAM_PORT):
 
 def webcam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT):
     """
-    Creates the Gstreamer pipeline that takes in the vision webcam
-    stream and outputs both an h.264-encoded stream and a raw stream to
-    a shared memory location.
+    Return the Gstreamer pipeline that takes in the vision webcam stream
+    and outputs both an h.264-encoded stream and a raw stream to a
+    shared memory location.
     """
     return Gst.parse_launch(webcam_streaming_command(host, port))
 
 def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
                                iso=ISO, shutter=SHUTTER_SPEED):
     """
-    Creates the Gstreamer pipeline that takes in the Raspberry pi camera
+    Create the Gstreamer pipeline that takes in the Raspberry pi camera
     stream and outputs both an h.264-encoded stream and a raw stream to
     a shared memory location.
     """
@@ -115,7 +115,7 @@ def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
 def raspicam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT,
                                 iso=ISO, shutter=SHUTTER_SPEED):
     """
-    Creates the Gstreamer pipeline that takes in the Raspberry Pi camera
+    Create the Gstreamer pipeline that takes in the Raspberry Pi camera
     stream and outputs both an h.264-encoded stream and a raw stream to
     a shared memory location.
     """
@@ -125,8 +125,11 @@ def raspicam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT,
 def raspicam_streaming_process(host=STREAM_HOST, port=STREAM_PORT,
                                iso=ISO, shutter=SHUTTER_SPEED):
     """
-    Creates a subprocess to stream the raspberry pi camera, outputting
+    Create a subprocess to stream the raspberry pi camera, outputting
     the same streams as the webcam.
+
+    As raspicam_command is deprecated, this function has no other use
+    and is also deprecated in favor of raspicam_streaming_pipeline.
     """
     command = (
         raspicam_command(iso, shutter) + GSTREAMER_LAUNCH_COMMAND +
@@ -154,7 +157,12 @@ def raspicam_streaming_process(host=STREAM_HOST, port=STREAM_PORT,
 def get_caps_from_process_and_wait(proc):
     """
     Gets the capture filters from the given process and waits for the
-    pipeline to play
+    pipeline to play.
+
+    As raspicam_streaming_process is deprecated in favor of
+    raspicam_streaming_pipeline, this function is also deprecated in
+    favor of using Gst.Pipeline.get_by_name and get_sink_caps to find
+    the caps for the pipeline returned by raspicam_streaming_process.
     """
     caps = None
     while True:
@@ -182,7 +190,7 @@ def get_caps_from_process_and_wait(proc):
 
 def webcam_loopback_command(caps):
     """
-    Creates the command used by opencv to parse the raw video from the
+    Return the command used by opencv to parse the raw video from the
     shared memory location, given capture filters.
 
     These capture filters are needed as opencv needs to know how to
@@ -195,7 +203,7 @@ def webcam_loopback_command(caps):
 
 def get_sink_caps(element):
     """
-    Returns the negotiated capture filters of a given element's sink
+    Return the negotiated capture filters of a given element's sink
     connection (i.e. what is outputted by the element).
 
     Because these capture filters will be negotiated, this method must
@@ -205,9 +213,7 @@ def get_sink_caps(element):
 
 def get_cap_value_by_name(caps, name):
     """
-    For some reason getValue(name) works for every data type except
-    fractions, so a bit more work needs to be done to get a capture
-    filter by its name.
+    Return what caps.get_value(name) does, but also handle fractions.
     """
     try:
         return caps.get_value(name)

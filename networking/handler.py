@@ -1,3 +1,22 @@
+"""
+This module exports a single useful function, create_gst_handler. Its
+purpose is to separate the message-handling code from main.py to make it
+more readable and to break things up.
+
+create_gst_handler handles 3 types of messages by doing the following:
+
+Error messages: Prints out the error to stdout (because in reality this
+code, which happens to not have any tests, is absolutely perfect and the
+only code that would not be functioning is the client code, so any error
+generated will be absolutely unhelpful)
+
+Start streaming messages: Stops the running GStreamer pipeline if any
+and then re-creates it with the specified ISO and shutterspeed options
+and streams to the specified host and port
+
+Stop streaming messages: Stops the running GStreamer pipeline if any
+"""
+
 from . import messages as m
 
 # Generic handlers
