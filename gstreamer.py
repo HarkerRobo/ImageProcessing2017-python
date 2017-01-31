@@ -24,7 +24,7 @@ def delete_socket():
     """Delete the file that is used for communication for the shared
     memory location."""
     try:
-        os.remove(gs.SOCKET_PATH)
+        os.remove(SOCKET_PATH)
     except FileNotFoundError:
         pass
 
