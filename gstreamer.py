@@ -5,8 +5,11 @@ streaming camera outputs.
 
 import os
 import re
-from subprocess import Popen, PIPE
+import threading
+from subprocess import PIPE, Popen
+
 import gi
+from gi.repository import Gst
 
 SOCKET_PATH = '/tmp/foo'
 SINK_NAME = 'pipesink'
@@ -19,7 +22,6 @@ ISO = 100
 SHUTTER_SPEED = 2000
 
 gi.require_version('Gst', '1.0')
-from gi.repository import Gst
 Gst.init(None)
 
 def delete_socket():
@@ -245,6 +247,58 @@ def make_command_line_parsable(caps):
         out += ', {0}={1}'.format(cap_name, cap_value)
 
     return out
+
+def print_message(message):
+    """Print a message received from a pipeline bus, formatted to be
+    descriptive.
+
+    Adapted from examples at
+    https://gist.github.com/willpatera/7984486.
+    """
+    if message.type == Gst.MessageType.ERROR:
+        err, debug = message.parse_error()
+        element = message.src.get_name()
+        print('Error received from element {}: {}'.format(element, err))
+        print('Debugging information: {}'.format(debug))
+
+    elif message.type == Gst.MessageType.EOS:
+        print('End-Of-Stream reached.')
+
+    elif message.type == Gst.MessageType.STATE_CHANGED:
+        if isinstance(message.src, Gst.Pipeline):
+            old_state, new_state, _ = message.parse_state_changed()
+            old = old_state.value_nick
+            new = new_state.value_nick
+            print('Pipeline state changed from {} to {}'.format(old, new))
+
+    else:
+        m_type = message.type
+        print('Unexpected message of type {} received.'.format(m_type))
+
+class MessagePrinter(threading.Thread):
+    """Thread that coninously queries the pipeline's bus for messages,
+    printing them to stdout.
+    """
+    MESSAGE_TYPES = (Gst.MessageType.STATE_CHANGED | Gst.MessageType.ERROR |
+                     Gst.MessageType.EOS)
+
+    def __init__(self, pipeline):
+        threading.Thread.__init__(self)
+        self._stop = threading.Event()
+        self.pipeline = pipeline
+
+    def run(self):
+        """Start the thread."""
+        bus = self.pipeline.get_bus()
+        while not self._stop.isSet():
+             # In nanoseconds, so wait 0.1s = 1e5 nanoseconds
+            message = bus.timed_pop_filtered(1e5, self.MESSAGE_TYPES)
+            if message is not None:
+                print_message(message)
+
+    def stop(self):
+        """Stop the thread."""
+        self._stop.set()
 
 if __name__ == '__main__':
     testPipeline = Gst.parse_launch(

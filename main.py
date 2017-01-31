@@ -22,6 +22,10 @@ gs.delete_socket()
 pipeline = gs.raspicam_streaming_pipeline()
 pipeline.set_state(Gst.State.PLAYING)
 
+# Start debugging the gstreamer pipeline
+debuggingThread = gs.MessagePrinter(pipeline)
+debuggingThread.start()
+
 # TODO: Find a better method to wait for playback to start
 print(pipeline.get_state(Gst.CLOCK_TIME_NONE)) # Wait for pipeline to play
 
@@ -29,6 +33,11 @@ caps = gs.get_sink_caps(pipeline.get_by_name(gs.SINK_NAME))
 cap_string = gs.make_command_line_parsable(caps)
 
 cap = cv2.VideoCapture(gs.webcam_loopback_command(cap_string))
+
+# Now that the capture filters have been (hopefully) successfully
+# captured, GStreamer doesn't need to be debugged anymore and the thread
+# can be stopped.abs
+debuggingThread.stop()
 
 # Set up server
 sock, clis = networking.server.create_socket_and_client_list()
