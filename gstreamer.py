@@ -9,10 +9,12 @@ from subprocess import Popen, PIPE
 import gi
 
 SOCKET_PATH = '/tmp/foo'
-STREAM_HOST = '192.168.1.123'
-STREAM_PORT = 5001
 SINK_NAME = 'pipesink'
 GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v -e '
+
+# Defaults; can be overriden by parameters
+STREAM_HOST = '192.168.1.123'
+STREAM_PORT = 5001
 ISO = 100
 SHUTTER_SPEED = 2000
 
@@ -110,7 +112,7 @@ def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
         'shmsink name={sink_name} socket-path={socket_path} '
         'sync=true wait-for-connection=false shm-size=10000000'
     ).format(host=host, port=port, socket_path=SOCKET_PATH,
-        sink_name=SINK_NAME, iso=iso, shutter=shutter)
+             sink_name=SINK_NAME, iso=iso, shutter=shutter)
 
 def raspicam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT,
                                 iso=ISO, shutter=SHUTTER_SPEED):
@@ -228,9 +230,9 @@ def make_command_line_parsable(caps):
     parenthesis (e.g. width=(int)320). This method returns that string,
     but without the type and parenthesis.
 
-    One could just use regex to find all ocurrences of \(.*?\), but that
-    would run into problems if the enclosed strings contained
-    parenthesis.
+    One could just use regex to find all ocurrences of characters
+    surrounded in paranthesis, but that would run into problems if the
+    enclosed strings contained parenthesis.
     """
 
     struct = caps.get_structure(0)
