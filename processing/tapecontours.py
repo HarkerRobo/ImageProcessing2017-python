@@ -10,7 +10,7 @@ from .drawing import draw_corners
 
 LOW_GREEN = np.array([60, 100, 20])
 UPPER_GREEN = np.array([80, 255, 255])
-MIN_PERCENT = 0.8 # After the first rectangle is detected, the second
+MIN_PERCENT = 0.7 # After the first rectangle is detected, the second
                   # rectangle's area must be above this percent of the first's
 
 TAPE_WIDTH = 2
