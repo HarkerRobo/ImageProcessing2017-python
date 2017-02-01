@@ -10,8 +10,14 @@ from .drawing import draw_corners
 
 LOW_GREEN = np.array([60, 100, 20])
 UPPER_GREEN = np.array([80, 255, 255])
-MIN_PERCENT = 0.9 # After the first rectangle is detected, the second
+MIN_PERCENT = 0.8 # After the first rectangle is detected, the second
                   # rectangle's area must be above this percent of the first's
+
+TAPE_WIDTH = 2
+TAPE_HEIGHT = 5
+TAPE_WH_RATIO = TAPE_WIDTH / TAPE_HEIGHT
+TAPE_ACCEPTABLE_ERROR = 0.2 # The maximum percent error for the ratio of the
+                              # target's width to height
 
 # Tape area is 10-1/4 in by 5 in
 TARGET_SCALE = 10
@@ -35,6 +41,15 @@ def get_target_corners(img):
         (w/2 - TARGET_WIDTH/2, h/2 + TARGET_HEIGHT/2),
         (w/2 - TARGET_WIDTH/2, h/2 - TARGET_HEIGHT/2)
     )
+
+def get_width_height_ratio(points):
+    """Returns the ratio of the width of the rectangle approximating the
+    four given points to the height."""
+    rect = cv2.minAreaRect(points)
+    dims = rect[1]
+    if dims[1] == 0:
+        return 0
+    return dims[0] / dims[1]
 
 def get_mask(img):
     """Return a mask were the green parts of the image are white and the
@@ -67,8 +82,19 @@ def get_tape_contours_and_corners(mask, debug_img=None):
         # Check if the countour has four courners
         perimeter = cv2.arcLength(c, True)
         approx = cv2.approxPolyDP(c, 0.02 * perimeter, True)
+
         # If it does save it
         if len(approx) == 4:
+            cv2.drawContours(debug_img, [c], -1, (0, 0, 255), 1)
+            # Check that the shape of the object matches that of the
+            # target Since the width and height could be reversed,
+            # 1/ratio must also be checked.
+            ratio = get_width_height_ratio(approx)
+            err1 = abs(ratio - TAPE_WH_RATIO) / TAPE_WH_RATIO
+            err2 = abs(1/ratio - TAPE_WH_RATIO) / TAPE_WH_RATIO
+            if err1 > TAPE_ACCEPTABLE_ERROR and err2 > TAPE_ACCEPTABLE_ERROR:
+                continue # Skip the object if it does not
+
             found_contours.append(c)
             found_corners.append(corners_to_tuples(approx))
             # If there are already 2 rectangles then break
@@ -87,6 +113,8 @@ def get_corners_from_image(img, show_image=DEBUG):
     debug_img = img.copy() if show_image else None
 
     mask = get_mask(img)
+    if show_image:
+        cv2.imshow('mask', mask)
     _, crns = get_tape_contours_and_corners(mask, debug_img)
 
     if show_image:
