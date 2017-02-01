@@ -20,6 +20,8 @@ STREAM_HOST = '192.168.1.123'
 STREAM_PORT = 5001
 ISO = 100
 SHUTTER_SPEED = 2000
+AWB_BLUE = 2.5
+AWB_RED = 1
 
 gi.require_version('Gst', '1.0')
 Gst.init(None)
@@ -89,7 +91,8 @@ def webcam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT):
     return Gst.parse_launch(webcam_streaming_command(host, port))
 
 def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
-                               iso=ISO, shutter=SHUTTER_SPEED):
+                               iso=ISO, shutter=SHUTTER_SPEED,
+                               awb_blue=AWB_BLUE, awb_red=AWB_RED):
     """
     Create the Gstreamer pipeline that takes in the Raspberry pi camera
     stream and outputs both an h.264-encoded stream and a raw stream to
@@ -98,7 +101,8 @@ def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
     return (
         # Take in stream from wraspberry pi camera
         'rpicamsrc preview=false exposure-mode=0 '
-        'iso={iso} shutter-speed={shutter} ! '
+        'iso={iso} shutter-speed={shutter} '
+        'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} ! '
         'video/x-raw, format=I420, width=640, height=320, framerate=15/1 ! '
         # Copy the stream to two different outputs
         'tee name=t ! queue ! '
@@ -114,17 +118,20 @@ def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
         'shmsink name={sink_name} socket-path={socket_path} '
         'sync=true wait-for-connection=false shm-size=10000000'
     ).format(host=host, port=port, socket_path=SOCKET_PATH,
-             sink_name=SINK_NAME, iso=iso, shutter=shutter)
+             sink_name=SINK_NAME, iso=iso, shutter=shutter,
+             ab=AWB_BLUE, ar=AWB_RED)
 
 def raspicam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT,
-                                iso=ISO, shutter=SHUTTER_SPEED):
+                                iso=ISO, shutter=SHUTTER_SPEED,
+                                awb_blue=AWB_BLUE, awb_red=AWB_RED):
     """
     Create the Gstreamer pipeline that takes in the Raspberry Pi camera
     stream and outputs both an h.264-encoded stream and a raw stream to
     a shared memory location.
     """
     return Gst.parse_launch(
-        raspicam_streaming_command(host, port, iso, shutter))
+        raspicam_streaming_command(host, port, iso, shutter,
+                                   awb_blue, awb_red))
 
 def raspicam_streaming_process(host=STREAM_HOST, port=STREAM_PORT,
                                iso=ISO, shutter=SHUTTER_SPEED):
