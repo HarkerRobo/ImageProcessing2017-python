@@ -54,7 +54,10 @@ def AcceptClients(server_socket, clients, on_new_message):
                 data = x.recv(SIZE)
                 if data:
                     # Client has sent something
-                    on_new_message(x, data.decode('utf-8'))
+                    try:
+                        on_new_message(x, data.decode('utf-8'))
+                    except UnicodeDecodeError:
+                        pass
                 else:
                     # Client has disconnected
                     x.close()

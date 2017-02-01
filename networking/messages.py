@@ -21,6 +21,7 @@ import json
 TYPE_START_STREAM = 'start'
 TYPE_STOP_STREAM = 'stop'
 TYPE_ERROR = 'error'
+TYPE_RESULTS = 'results'
 
 # Fields
 FIELD_TYPE = 'type'
@@ -29,6 +30,7 @@ FIELD_HOST = 'host'
 FIELD_ISO = 'iso'
 FIELD_SS = 'shutterspeed'
 FIELD_ERROR = 'message'
+FIELD_CORNERS = 'corners'
 
 # Message schemas
 MESSAGES = {
@@ -41,6 +43,9 @@ MESSAGES = {
     TYPE_STOP_STREAM: {},
     TYPE_ERROR: {
         FIELD_ERROR: str
+    },
+    TYPE_RESULTS: {
+        FIELD_CORNERS: list
     }
 }
 
@@ -72,4 +77,4 @@ def parse_message(message_str):
 def create_message(message_type, fields):
     """Create a message string from a given tyoe and fields."""
     message = dict({FIELD_TYPE: message_type}, **fields)
-    return json.dumps(message)
+    return json.dumps(message) + '\n'
