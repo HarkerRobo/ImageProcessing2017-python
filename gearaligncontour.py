@@ -35,6 +35,12 @@ def transform(img):
     try:
         # print(cv2.getPerspectiveTransform(np.array(left_first, np.float32), np.array(left_second, np.float32)))
         h, _ = cv2.findHomography(np.array(left_first, np.float32), np.array(left_second, np.float32))
+        cameraMatrix = None
+        distCoeffs = None
+        cv2.calibrateCamera(objectPoints=np.array(left_first, np.float32), imagePoints=np.array(left_second, np.float32), imageSize=img.shape[::-1], cameraMatrix=cameraMatrix, distCoeffs=distCoeffs)
+
+
+
         print(h)
     except:
         print("Fail")
