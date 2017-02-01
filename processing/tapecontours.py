@@ -58,7 +58,10 @@ def get_tape_contours_and_corners(mask, debug_img=None):
         # If the current contour is too small compared to the found
         # contour to be a piece of tape, discard it
         if len(found_contours) == 1:
-            ratio = cv2.contourArea(c) / cv2.contourArea(found_contours[0])
+            area = cv2.contourArea(found_contours[0])
+            if area == 0:
+                break # So there isn't a ZeroDivisionError
+            ratio = cv2.contourArea(c) / area
             if ratio <= MIN_PERCENT:
                 break
         # Check if the countour has four courners
@@ -74,13 +77,14 @@ def get_tape_contours_and_corners(mask, debug_img=None):
 
     if debug_img is not None:
         cv2.drawContours(debug_img, found_contours, -1, (255, 0, 0), 1)
-        draw_corners(debug_img, found_corners, (255, 0, 0))
+        for corner_set in found_corners:
+            draw_corners(debug_img, corner_set, (255, 0, 0))
 
     return found_contours, found_corners
 
 def get_corners_from_image(img, show_image=DEBUG):
     """Return an array of the corners of the tape in a given image."""
-    debug_img = img.copy if show_image else None
+    debug_img = img.copy() if show_image else None
 
     mask = get_mask(img)
     _, crns = get_tape_contours_and_corners(mask, debug_img)
