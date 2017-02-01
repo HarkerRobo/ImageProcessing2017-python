@@ -45,6 +45,7 @@ handler = networking.create_gst_handler(gs, pipeline)
 
 acceptThread = threading.Thread(target=networking.server.AcceptClients,
                                 args=[sock, clis, handler])
+acceptThread.daemon = True
 acceptThread.start()
 
 while True:
