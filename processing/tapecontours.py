@@ -4,14 +4,18 @@ These pieces of tape are assumed to be quadrilaterals, and should not
 intersect each other.
 """
 
+from functools import partial
 import cv2
 import numpy as np
 from .drawing import draw_corners
 
 LOW_GREEN = np.array([60, 100, 20])
 UPPER_GREEN = np.array([80, 255, 255])
-MIN_PERCENT = 0.7 # After the first rectangle is detected, the second
-                  # rectangle's area must be above this percent of the first's
+MIN_PERCENT1 = 0.7 # After the first rectangle is detected, the second
+                   # rectangle's area must be above this percent of the first's
+MIN_PERCENT2 = 0.2 # If two contours have to be combined to form the second
+                   # rectangle, their areas must be above this percentage of
+                   # the first's
 
 TAPE_WIDTH = 2
 TAPE_HEIGHT = 5
@@ -43,13 +47,39 @@ def get_target_corners(img):
     )
 
 def get_width_height_ratio(points):
-    """Returns the ratio of the width of the rectangle approximating the
+    """Return the ratio of the width of the rectangle approximating the
     four given points to the height."""
     rect = cv2.minAreaRect(points)
     dims = rect[1]
     if dims[1] == 0:
         return 0
     return dims[0] / dims[1]
+
+def getX(point):
+    """Return the x value of a point."""
+    return point[0]
+
+def getY(point):
+    """Return the y value of a point."""
+    return point[1]
+
+def get_center(cnt):
+    """Return the center of a given contour."""
+    try:
+        M = cv2.moments(cnt)
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
+        return (cX, cY)
+    except ZeroDivisionError:
+        return (-1e4, -1e4)
+
+def get_distance(cnt, center):
+    """Return the distance between a point and the center of a
+    contour."""
+    cnt_center = get_center(cnt)
+    xdiff = center[0] - cnt_center[0]
+    ydiff = center[1] - cnt_center[1]
+    return np.sqrt(xdiff**2 + ydiff**2)
 
 def get_mask(img):
     """Return a mask were the green parts of the image are white and the
@@ -58,6 +88,46 @@ def get_mask(img):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, LOW_GREEN, UPPER_GREEN)
     return mask
+
+def large_tape_piece(contours, min_area=1e-4, debug_img=None):
+    """
+    Return the contours and corners for the piece of tape in the given
+    set of contours. If none of the contours are close enough to a piece
+    of tape, return None in place of the contours and None in place of
+    the corners.
+
+    This function also returns an array of the rest of the contours that
+    are yet unprocessed.
+    """
+    rest = [c.copy() for c in contours]
+
+    for c in contours:
+        ratio = cv2.contourArea(c) / min_area
+        if ratio <= MIN_PERCENT1:
+            break
+
+        rest = rest[1:]
+
+        # Check if the countour has four courners
+        perimeter = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.02 * perimeter, True)
+
+        # If it does it could be a piece of tape!
+        if len(approx) == 4:
+            if debug_img is not None:
+                cv2.drawContours(debug_img, [c], -1, (0, 0, 255), 1)
+            # Check that the shape of the object matches that of the
+            # target Since the width and height could be reversed,
+            # 1/ratio must also be checked.
+            ratio = get_width_height_ratio(approx)
+            err1 = abs(ratio - TAPE_WH_RATIO) / TAPE_WH_RATIO
+            err2 = abs(1/ratio - TAPE_WH_RATIO) / TAPE_WH_RATIO
+            if err1 > TAPE_ACCEPTABLE_ERROR and err2 > TAPE_ACCEPTABLE_ERROR:
+                continue # Skip the object if it does not
+
+            return c, corners_to_tuples(approx), rest
+
+    return None, None, rest
 
 def get_tape_contours_and_corners(mask, debug_img=None):
     """Return an array of contours for the pieces of tape in a given
@@ -69,37 +139,36 @@ def get_tape_contours_and_corners(mask, debug_img=None):
     found_contours = []
     found_corners = []
 
-    for c in sorted_contours:
-        # If the current contour is too small compared to the found
-        # contour to be a piece of tape, discard it
-        if len(found_contours) == 1:
-            area = cv2.contourArea(found_contours[0])
-            if area == 0:
-                break # So there isn't a ZeroDivisionError
-            ratio = cv2.contourArea(c) / area
-            if ratio <= MIN_PERCENT:
-                break
-        # Check if the countour has four courners
-        perimeter = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.02 * perimeter, True)
+    tape_cnt, tape_crn, rest_cnt = large_tape_piece(sorted_contours,
+                                                    debug_img=debug_img)
 
-        # If it does save it
-        if len(approx) == 4:
-            cv2.drawContours(debug_img, [c], -1, (0, 0, 255), 1)
-            # Check that the shape of the object matches that of the
-            # target Since the width and height could be reversed,
-            # 1/ratio must also be checked.
-            ratio = get_width_height_ratio(approx)
-            err1 = abs(ratio - TAPE_WH_RATIO) / TAPE_WH_RATIO
-            err2 = abs(1/ratio - TAPE_WH_RATIO) / TAPE_WH_RATIO
-            if err1 > TAPE_ACCEPTABLE_ERROR and err2 > TAPE_ACCEPTABLE_ERROR:
-                continue # Skip the object if it does not
+    if tape_cnt is not None and cv2.contourArea(tape_cnt) > 0:
+        found_contours.append(tape_cnt)
+        found_corners.append(tape_crn)
 
-            found_contours.append(c)
-            found_corners.append(corners_to_tuples(approx))
-            # If there are already 2 rectangles then break
-            if len(found_contours) == 2:
-                break
+        # Check if there are two pieces of unblocked tape
+        tape_area = cv2.contourArea(tape_cnt)
+        sec_cnt, sec_crn, _ = large_tape_piece(rest_cnt, tape_area, debug_img)
+        if sec_cnt is not None:
+            found_contours.append(sec_cnt)
+            found_corners.append(sec_crn)
+        else:
+            # Otherwise, the peg may be splitting a piece of tape into two.
+            # Therefore, try combining the two closest
+            distance = partial(get_distance, center=get_center(tape_cnt))
+            good_area = lambda c: cv2.contourArea(c) / tape_area > MIN_PERCENT2
+
+            # Find all contours with high enough area and sort them by distance
+            # from the previously found piece of tape
+            other_cnt = sorted(filter(good_area, rest_cnt), key=distance)
+            if len(other_cnt) >= 2:
+                combined_cnt = cv2.convexHull(
+                    np.concatenate((other_cnt[0], other_cnt[1])))
+                cmb_cnt, cmb_corns, _ = large_tape_piece([combined_cnt],
+                                                         tape_area, debug_img)
+                if cmb_cnt is not None:
+                    found_contours.append(cmb_cnt)
+                    found_corners.append(cmb_corns)
 
     if debug_img is not None:
         cv2.drawContours(debug_img, found_contours, -1, (255, 0, 0), 1)

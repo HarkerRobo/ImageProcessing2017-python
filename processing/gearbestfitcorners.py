@@ -16,7 +16,7 @@ need to check for this case.
 import cv2
 import numpy as np
 from .drawing import draw_corners, draw_line
-from .tapecontours import get_corners_from_image
+from .tapecontours import get_corners_from_image, getX, getY
 
 def get_corner_line(corners):
     """Return the best fit line for an array of corners.
@@ -56,17 +56,28 @@ def get_intersection_point(l1, l2):
     y = m*x + b
     return (x, y)
 
-getX = lambda c: c[0]
-getY = lambda c: c[1]
+def get_top_corners(corners):
+    """Return the top corners for the given rectangles, sorted by their
+    x positions in ascending order.
+    """
+    top_corners = np.concatenate(
+        [sorted(rect, key=getY)[:2] for rect in corners])
+    return sorted(top_corners, key=getX)
+
+def get_bottom_corners(corners):
+    """Return the bottom corners for the given rectangles, sorted by
+    their x positions in ascending order.
+    """
+    bottom_corners = np.concatenate(
+        [sorted(rect, key=getY)[2:] for rect in corners])
+    return sorted(bottom_corners, key=getX)
 
 def get_lines(found_corners, debug_img=None):
     """Return an array of the best fit lines for the sides of the two
     pieces of tape.
     """
-    top_corners = np.concatenate(
-        [sorted(rect, key=getY)[:2] for rect in found_corners])
-    bottom_corners = np.concatenate(
-        [sorted(rect, key=getY, reverse=True)[:2] for rect in found_corners])
+    top_corners = get_top_corners(found_corners)
+    bottom_corners = get_bottom_corners(found_corners)
 
     if debug_img is not None:
         draw_corners(debug_img, top_corners, (0, 0, 255))
