@@ -119,7 +119,7 @@ def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
         'sync=true wait-for-connection=false shm-size=10000000'
     ).format(host=host, port=port, socket_path=SOCKET_PATH,
              sink_name=SINK_NAME, iso=iso, shutter=shutter,
-             ab=AWB_BLUE, ar=AWB_RED)
+             ab=awb_blue, ar=awb_red)
 
 def raspicam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT,
                                 iso=ISO, shutter=SHUTTER_SPEED,
