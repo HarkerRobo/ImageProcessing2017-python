@@ -167,7 +167,8 @@ def get_tape_contours_and_corners(mask, debug_img=None):
             # Otherwise, the peg may be splitting a piece of tape into two.
             # Therefore, try combining the two closest
             distance = partial(get_distance, center=get_center(tape_cnt))
-            good_width = lambda c: abs(cv2.boundingRect(c)[2] - tape_width) / tape_width <= MIN_WIDTH_ERROR
+            diff = lambda c: abs(cv2.boundingRect(c)[2] - tape_width)
+            good_width = lambda c: diff(c) / tape_width <= MIN_WIDTH_ERROR
 
             # Find all contours with high enough area and sort them by distance
             # from the previously found piece of tape
