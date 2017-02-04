@@ -11,9 +11,8 @@ from .drawing import draw_corners
 
 LOW_GREEN = np.array([60, 100, 20])
 UPPER_GREEN = np.array([80, 255, 255])
-MIN_PERCENT1 = 0.7 # After the first rectangle is detected, the second
+MIN_PERCENT1 = 0.6 # After the first rectangle is detected, the second
                    # rectangle's area must be above this percent of the first's
-MIN_PERCENT2 = 0.2
 
 MIN_WIDTH_ERROR = 0.5 # If two contours have to be combined to form the second
                       # rectangle, the percent error in for their width and
