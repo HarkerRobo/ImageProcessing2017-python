@@ -14,7 +14,7 @@ UPPER_GREEN = np.array([80, 255, 255])
 MIN_PERCENT1 = 0.6 # After the first rectangle is detected, the second
                    # rectangle's area must be above this percent of the first's
 
-MAX_WIDTH_ERROR = 0.5 # If two contours have to be combined to form the second
+MAX_WIDTH_ERROR = 0.7 # If two contours have to be combined to form the second
                       # rectangle, the percent error in for their width and
                       # that of the first the first's
 
@@ -103,6 +103,9 @@ def large_tape_piece(contours, min_area=1e-4, debug_img=None):
     rest = [c.copy() for c in contours]
 
     for c in contours:
+        if debug_img is not None:
+            cv2.drawContours(debug_img, [c], -1, (0, 0, 255), 1)
+
         ratio = cv2.contourArea(c) / min_area
         if ratio <= MIN_PERCENT1:
             break
@@ -124,7 +127,7 @@ def large_tape_piece(contours, min_area=1e-4, debug_img=None):
         # If it does it could be a piece of tape!
         if 4 <= len(approx) <= 5:
             if debug_img is not None:
-                cv2.drawContours(debug_img, [c], -1, (0, 0, 255), 1)
+                cv2.drawContours(debug_img, [c], -1, (0, 100, 255), 1)
             # Check that the shape of the object matches that of the
             # target Since the width and height could be reversed,
             # 1/ratio must also be checked.
