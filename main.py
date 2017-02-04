@@ -56,7 +56,7 @@ while True:
     corners = get_corners_from_image(img, show_image=True)
 
     # Send the coordinates to the roborio
-    corns = np.array(corners).tolist()
+    corns = [[(int(a[0]), int(a[1])) for a in b] for b in corners]
     message = m.create_message(m.TYPE_RESULTS, {m.FIELD_CORNERS: corns})
     networking.server.broadcast(sock, clis, message)
 

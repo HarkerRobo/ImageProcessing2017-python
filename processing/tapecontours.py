@@ -13,14 +13,16 @@ LOW_GREEN = np.array([60, 100, 20])
 UPPER_GREEN = np.array([80, 255, 255])
 MIN_PERCENT1 = 0.7 # After the first rectangle is detected, the second
                    # rectangle's area must be above this percent of the first's
-MIN_PERCENT2 = 0.2 # If two contours have to be combined to form the second
-                   # rectangle, their areas must be above this percentage of
-                   # the first's
+MIN_PERCENT2 = 0.2
+
+MIN_WIDTH_ERROR = 0.5 # If two contours have to be combined to form the second
+                      # rectangle, the percent error in for their width and
+                      # that of the first the first's
 
 TAPE_WIDTH = 2
 TAPE_HEIGHT = 5
 TAPE_WH_RATIO = TAPE_WIDTH / TAPE_HEIGHT
-TAPE_ACCEPTABLE_ERROR = 0.2 # The maximum percent error for the ratio of the
+TAPE_ACCEPTABLE_ERROR = 0.7 # The maximum percent error for the ratio of the
                               # target's width to height
 
 # Tape area is 10-1/4 in by 5 in
@@ -108,12 +110,20 @@ def large_tape_piece(contours, min_area=1e-4, debug_img=None):
 
         rest = rest[1:]
 
-        # Check if the countour has four courners
+        # Check if the countour has four courners (or 5 in some cases)
         perimeter = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.02 * perimeter, True)
+        approx = cv2.approxPolyDP(c, 0.04 * perimeter, True)
+
+        center = get_center(c)
+        moved_center = (center[0]-5, center[1]+5)
+        if debug_img is not None:
+            cv2.putText(debug_img, str(len(approx)), moved_center,
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
+
+            draw_corners(debug_img, corners_to_tuples(approx), (0, 0, 255))
 
         # If it does it could be a piece of tape!
-        if len(approx) == 4:
+        if 4 <= len(approx) <= 5:
             if debug_img is not None:
                 cv2.drawContours(debug_img, [c], -1, (0, 0, 255), 1)
             # Check that the shape of the object matches that of the
@@ -134,8 +144,9 @@ def get_tape_contours_and_corners(mask, debug_img=None):
     mask as well as the corners for each of those contours."""
 
     _, cnt, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    cnt_hulls = map(cv2.convexHull, cnt)
 
-    sorted_contours = sorted(cnt, key=cv2.contourArea, reverse=True)
+    sorted_contours = sorted(cnt_hulls, key=cv2.contourArea, reverse=True)
     found_contours = []
     found_corners = []
 
@@ -148,6 +159,7 @@ def get_tape_contours_and_corners(mask, debug_img=None):
 
         # Check if there are two pieces of unblocked tape
         tape_area = cv2.contourArea(tape_cnt)
+        tape_width = cv2.boundingRect(tape_cnt)[2]
         sec_cnt, sec_crn, _ = large_tape_piece(rest_cnt, tape_area, debug_img)
         if sec_cnt is not None:
             found_contours.append(sec_cnt)
@@ -156,11 +168,11 @@ def get_tape_contours_and_corners(mask, debug_img=None):
             # Otherwise, the peg may be splitting a piece of tape into two.
             # Therefore, try combining the two closest
             distance = partial(get_distance, center=get_center(tape_cnt))
-            good_area = lambda c: cv2.contourArea(c) / tape_area > MIN_PERCENT2
+            good_width = lambda c: abs(cv2.boundingRect(c)[2] - tape_width) / tape_width <= MIN_WIDTH_ERROR
 
             # Find all contours with high enough area and sort them by distance
             # from the previously found piece of tape
-            other_cnt = sorted(filter(good_area, rest_cnt), key=distance)
+            other_cnt = sorted(filter(good_width, rest_cnt), key=distance)
             if len(other_cnt) >= 2:
                 combined_cnt = cv2.convexHull(
                     np.concatenate((other_cnt[0], other_cnt[1])))
