@@ -14,7 +14,7 @@ UPPER_GREEN = np.array([80, 255, 255])
 MIN_PERCENT1 = 0.6 # After the first rectangle is detected, the second
                    # rectangle's area must be above this percent of the first's
 
-MIN_WIDTH_ERROR = 0.5 # If two contours have to be combined to form the second
+MAX_WIDTH_ERROR = 0.5 # If two contours have to be combined to form the second
                       # rectangle, the percent error in for their width and
                       # that of the first the first's
 
@@ -168,7 +168,7 @@ def get_tape_contours_and_corners(mask, debug_img=None):
             # Therefore, try combining the two closest
             distance = partial(get_distance, center=get_center(tape_cnt))
             diff = lambda c: abs(cv2.boundingRect(c)[2] - tape_width)
-            good_width = lambda c: diff(c) / tape_width <= MIN_WIDTH_ERROR
+            good_width = lambda c: diff(c) / tape_width <= MAX_WIDTH_ERROR
 
             # Find all contours with high enough area and sort them by distance
             # from the previously found piece of tape
