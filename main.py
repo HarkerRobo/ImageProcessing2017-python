@@ -6,7 +6,6 @@ information.
 
 import threading
 import cv2
-import numpy as np
 import gstreamer as gs
 import networking
 import networking.messages as m
