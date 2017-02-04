@@ -141,6 +141,42 @@ def large_tape_piece(contours, min_area=1e-4, debug_img=None):
 
     return None, None, rest
 
+def split_tape_piece(contours, tape_cnt=None, tape_width=None,
+                     tape_area=1e-4, debug_img=None):
+    """
+    Return the contours and corners for the piece of tape in the given
+    set of contours, created by combining the two largest contours. If
+    none of the contours are close enough to a piece of tape, return
+    None in place of the contours and None in place of the corners.
+
+    This function also returns an array of the rest of the contours that
+    are yet unprocessed.
+    """
+    if tape_cnt is not None and tape_width is not None:
+        distance = partial(get_distance, center=get_center(tape_cnt))
+        diff = lambda c: abs(cv2.boundingRect(c)[2] - tape_width)
+        good_width = lambda c: diff(c) / tape_width <= MAX_WIDTH_ERROR
+
+        # Find all contours with high enough area and sort them by distance
+        # from the previously found piece of tape
+        other_cnt = sorted(filter(good_width, contours), key=distance)
+    else:
+        other_cnt = contours
+
+    if len(other_cnt) >= 2:
+        combined_cnt = cv2.convexHull(
+            np.concatenate((other_cnt[0], other_cnt[1])))
+        cmb_cnt, cmb_corns, _ = large_tape_piece([combined_cnt],
+                                                 tape_area, debug_img)
+        if cmb_cnt is not None:
+            rest = []
+            for cnt in contours:
+                if cnt is not other_cnt[0] and cnt is not other_cnt[1]:
+                    rest.append(cnt)
+            return cmb_cnt, cmb_corns, rest
+
+    return None, None, contours
+
 def get_tape_contours_and_corners(mask, debug_img=None):
     """Return an array of contours for the pieces of tape in a given
     mask as well as the corners for each of those contours."""
@@ -152,38 +188,30 @@ def get_tape_contours_and_corners(mask, debug_img=None):
     found_contours = []
     found_corners = []
 
-    tape_cnt, tape_crn, rest_cnt = large_tape_piece(sorted_contours,
-                                                    debug_img=debug_img)
+    tape1_cnt, tape1_crn, rest_cnt = large_tape_piece(sorted_contours,
+                                                      debug_img=debug_img)
 
-    if tape_cnt is not None and cv2.contourArea(tape_cnt) > 0:
-        found_contours.append(tape_cnt)
-        found_corners.append(tape_crn)
+    if tape1_cnt is None:
+        tape1_cnt, tape1_crn, rest_cnt = split_tape_piece(sorted_contours,
+                                                          debug_img=debug_img)
+
+    if tape1_cnt is not None and cv2.contourArea(tape1_cnt) > 0:
+        found_contours.append(tape1_cnt)
+        found_corners.append(tape1_crn)
 
         # Check if there are two pieces of unblocked tape
-        tape_area = cv2.contourArea(tape_cnt)
-        tape_width = cv2.boundingRect(tape_cnt)[2]
-        sec_cnt, sec_crn, _ = large_tape_piece(rest_cnt, tape_area, debug_img)
-        if sec_cnt is not None:
-            found_contours.append(sec_cnt)
-            found_corners.append(sec_crn)
-        else:
-            # Otherwise, the peg may be splitting a piece of tape into two.
-            # Therefore, try combining the two closest
-            distance = partial(get_distance, center=get_center(tape_cnt))
-            diff = lambda c: abs(cv2.boundingRect(c)[2] - tape_width)
-            good_width = lambda c: diff(c) / tape_width <= MAX_WIDTH_ERROR
+        tape_area = cv2.contourArea(tape1_cnt)
+        tape_width = cv2.boundingRect(tape1_cnt)[2]
 
-            # Find all contours with high enough area and sort them by distance
-            # from the previously found piece of tape
-            other_cnt = sorted(filter(good_width, rest_cnt), key=distance)
-            if len(other_cnt) >= 2:
-                combined_cnt = cv2.convexHull(
-                    np.concatenate((other_cnt[0], other_cnt[1])))
-                cmb_cnt, cmb_corns, _ = large_tape_piece([combined_cnt],
-                                                         tape_area, debug_img)
-                if cmb_cnt is not None:
-                    found_contours.append(cmb_cnt)
-                    found_corners.append(cmb_corns)
+        tape2_cnt, tape2_crn, _ = large_tape_piece(rest_cnt, tape_area,
+                                                   debug_img)
+        if tape2_cnt is None:
+            tape2_cnt, tape2_crn, _ = split_tape_piece(rest_cnt, tape1_cnt,
+                                                       tape_width, tape_area,
+                                                       debug_img)
+        if tape2_cnt is not None:
+            found_contours.append(tape2_cnt)
+            found_corners.append(tape2_crn)
 
     if debug_img is not None:
         cv2.drawContours(debug_img, found_contours, -1, (255, 0, 0), 1)
