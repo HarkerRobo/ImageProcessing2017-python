@@ -130,11 +130,11 @@ def get_outside_corners(tape_corners, debug_img=None):
     return get_intersection_points(lines, debug_img)
 
 if __name__ == '__main__':
-    im = cv2.imread('sampleImages/img.png')
+    im = cv2.imread('sampleImages/img3.jpg')
     cv2.imshow('Original', im)
 
-    crns = get_corners_from_image(im, show_image=False)
-    get_outside_corners(crns, im)
+    crns = get_corners_from_image(im, show_image=True)
+    # get_outside_corners(crns, im)
 
     cv2.imshow('Processsed', im)
 
