@@ -123,7 +123,7 @@ def is_tape(contour, debug_img=None):
 
     # Criteria 1: Contour has 4 or 5 contours
     center = get_center(contour)
-    moved_center = (center[0]-5, center[1]+5)
+    moved_center = (int(center[0]-5), int(center[1]+5))
     if debug_img is not None:
         cv2.putText(debug_img, str(len(approx)), moved_center,
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
