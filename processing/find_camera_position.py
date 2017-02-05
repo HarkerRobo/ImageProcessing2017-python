@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import time
-import gearcontours
+from .tapecontours import get_corners_from_image
 import traceback
 
 def transform(img):
@@ -9,9 +9,10 @@ def transform(img):
     # vcts = []
     # corners2 = gearcontours.process_image(cv2.imread("pic.jpg"))
 
-    object = gearcontours.process_image(cv2.imread("sampleImages/img.png"))
+    object = get_corners_from_image(cv2.imread("sampleImages/img.png"),
+                                    show_image=False)
     vcts = []
-    image = gearcontours.process_image(cv2.imread("pic.jpg"))
+    image = get_corners_from_image(cv2.imread("pic.jpg"), show_image=False)
 
 
     # for corner in object:
