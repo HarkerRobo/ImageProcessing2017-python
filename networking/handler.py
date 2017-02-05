@@ -50,8 +50,8 @@ def create_gst_handler(gs, initial_pipeline=None):
         nonlocal pipeline
         on_stop(message) # First kill the pipeline if it is running
         pipeline = gs.raspicam_streaming_pipeline(
-            message[m.FIELD_HOST], message[m.FIELD_PORT],
-            message[m.FIELD_ISO], message[m.FIELD_SS]
+            host=message[m.FIELD_HOST], port=message[m.FIELD_PORT],
+            iso=message[m.FIELD_ISO], shutter=message[m.FIELD_SS]
         )
         pipeline.set_state(gs.Gst.State.PLAYING)
 

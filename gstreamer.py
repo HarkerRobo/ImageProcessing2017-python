@@ -15,13 +15,21 @@ SOCKET_PATH = '/tmp/foo'
 SINK_NAME = 'pipesink'
 GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v -e '
 
-# Defaults; can be overriden by parameters
-STREAM_HOST = '192.168.1.123'
-STREAM_PORT = 5001
-ISO = 100
-SHUTTER_SPEED = 2000
-AWB_BLUE = 2.5
-AWB_RED = 1
+# Set of defaults used for all methods; adjustable via parameters
+DEFAULTS = {
+    'width': 640,
+    'height': 480,
+    'bitrate': 2000000, # 2 Mbps (after h.264 encoding)
+    'framerate': 15,
+    'host': '192.168.1.123',
+    'port': 5001,
+    'iso': 100,
+    'shutter': 2000,
+    'ab': 2.5, # Blue component of white balance
+    'ar': 1, # Red component of white balance
+}
+
+merge_defaults = lambda k: dict(DEFAULTS, **k)
 
 gi.require_version('Gst', '1.0')
 Gst.init(None)
@@ -34,7 +42,7 @@ def delete_socket():
     except FileNotFoundError:
         pass
 
-def raspicam_command(iso=ISO, shutter=SHUTTER_SPEED):
+def raspicam_command(**kwargs):
     """
     Return the command to generate h.264-encoded video from the
     Raspberry Pi camera and output it to stdout.
@@ -43,29 +51,35 @@ def raspicam_command(iso=ISO, shutter=SHUTTER_SPEED):
     stream very slow. Therefore, this function is deprecated and using a
     pipeline via the gstreamer api with the raspicam_streaming_pipeline
     is prefered.
+
+    The keword arguments taken are as follows: bitrate, framerate,
+    width, height, iso, shutter.
     """
     return (
         'raspivid --timeout 0 ' # No timeout
-        '--bitrate 2000000 ' # 2 Mbps bitrate (after h.264 encoding)
-        '--framerate 15 '
-        '--width 640 --height 480 '
+        '--bitrate {bitrate} ' # 2 Mbps bitrate (after h.264 encoding)
+        '--framerate {framerate} '
+        '--width {width} --height {height} '
         '--ev -1 '
         '--exposure off ' # Turn off auto exposure
         '--ISO {iso} ' # 1200 ISO
         '--shutter {shutter} ' # 2 millisecond shutterspeed
         '-n ' # No preview on HDMI output
         '-o - | ' # Stream to pipe
-    ).format(shutter=shutter, iso=iso)
+    ).format(**merge_defaults(kwargs))
 
-def webcam_streaming_command(host=STREAM_HOST, port=STREAM_PORT):
+def webcam_streaming_command(**kwargs):
     """
     Return the Gstreamer pipeline that takes in the vision webcam stream
     and outputs both an h.264-encoded stream and a raw stream to a
     shared memory location.
+
+    The keword arguments taken are as follows: width, height, host,
+    port.
     """
     return (
         # Take in stream from webcam
-        'v4l2src ! video/x-raw, width=640,height=480 ! '
+        'v4l2src ! video/x-raw, width={width},height={height} ! '
         # Copy the stream to two different outputs
         'tee name=t ! queue ! '
         # Encode one output to h.264
@@ -79,31 +93,36 @@ def webcam_streaming_command(host=STREAM_HOST, port=STREAM_PORT):
         # Put output in a shared memory location
         'shmsink name={sink_name} socket-path={socket_path} '
         'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(host=host, port=port,
-             socket_path=SOCKET_PATH, sink_name=SINK_NAME)
+    ).format(**dict(merge_defaults(kwargs),
+                    socket_path=SOCKET_PATH, sink_name=SINK_NAME))
 
-def webcam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT):
+def webcam_streaming_pipeline(**kwargs):
     """
     Return the Gstreamer pipeline that takes in the vision webcam stream
     and outputs both an h.264-encoded stream and a raw stream to a
     shared memory location.
-    """
-    return Gst.parse_launch(webcam_streaming_command(host, port))
 
-def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
-                               iso=ISO, shutter=SHUTTER_SPEED,
-                               awb_blue=AWB_BLUE, awb_red=AWB_RED):
+    The keword arguments taken are as follows: width, height, host,
+    port.
+    """
+    return Gst.parse_launch(webcam_streaming_command(**kwargs))
+
+def raspicam_streaming_command(**kwargs):
     """
     Create the Gstreamer pipeline that takes in the Raspberry pi camera
     stream and outputs both an h.264-encoded stream and a raw stream to
     a shared memory location.
+
+    The keword arguments are as follows: iso, shutter, ab, ar, width,
+    height, framerate, host, port
     """
     return (
         # Take in stream from wraspberry pi camera
         'rpicamsrc preview=false exposure-mode=0 '
         'iso={iso} shutter-speed={shutter} '
         'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} ! '
-        'video/x-raw, format=I420, width=640, height=320, framerate=15/1 ! '
+        'video/x-raw, format=I420, width={width}, height={height}, '
+        'framerate={framerate}/1 ! '
         # Copy the stream to two different outputs
         'tee name=t ! queue ! '
         # Encode one output to h.264
@@ -117,33 +136,33 @@ def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
         # Put output in a shared memory location
         'shmsink name={sink_name} socket-path={socket_path} '
         'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(host=host, port=port, socket_path=SOCKET_PATH,
-             sink_name=SINK_NAME, iso=iso, shutter=shutter,
-             ab=awb_blue, ar=awb_red)
+    ).format(**dict(merge_defaults(kwargs), socket_path=SOCKET_PATH,
+                    sink_name=SINK_NAME))
 
-def raspicam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT,
-                                iso=ISO, shutter=SHUTTER_SPEED,
-                                awb_blue=AWB_BLUE, awb_red=AWB_RED):
+def raspicam_streaming_pipeline(**kwargs):
     """
     Create the Gstreamer pipeline that takes in the Raspberry Pi camera
     stream and outputs both an h.264-encoded stream and a raw stream to
     a shared memory location.
-    """
-    return Gst.parse_launch(
-        raspicam_streaming_command(host, port, iso, shutter,
-                                   awb_blue, awb_red))
 
-def raspicam_streaming_process(host=STREAM_HOST, port=STREAM_PORT,
-                               iso=ISO, shutter=SHUTTER_SPEED):
+    The keword arguments are as follows: iso, shutter, ab, ar, width,
+    height, framerate, host, port
+    """
+    return Gst.parse_launch(raspicam_streaming_command(**kwargs))
+
+def raspicam_streaming_process(**kwargs):
     """
     Create a subprocess to stream the raspberry pi camera, outputting
     the same streams as the webcam.
+
+    The keword arguments taken are as follows: bitrate, framerate,
+    width, height, iso, shutter.
 
     As raspicam_command is deprecated, this function has no other use
     and is also deprecated in favor of raspicam_streaming_pipeline.
     """
     command = (
-        raspicam_command(iso, shutter) + GSTREAMER_LAUNCH_COMMAND +
+        raspicam_command(**kwargs) + GSTREAMER_LAUNCH_COMMAND +
         'rpicamsrc'
         # Get stream from raspivid process
         'fdsrc ! h264parse ! '
@@ -160,8 +179,8 @@ def raspicam_streaming_process(host=STREAM_HOST, port=STREAM_PORT,
         # Put output in a shared memory location
         'shmsink name={sink_name} socket-path={socket_path} '
         'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(host=host, port=port,
-             socket_path=SOCKET_PATH, sink_name=SINK_NAME)
+    ).format(**dict(merge_defaults(kwargs),
+                    socket_path=SOCKET_PATH, sink_name=SINK_NAME))
 
     return Popen(command, shell=True, stdout=PIPE)
 

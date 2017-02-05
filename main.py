@@ -15,7 +15,7 @@ Gst = gs.Gst
 gs.delete_socket()
 
 # Code for using raspivid command below
-# process = gs.raspicam_streaming_process(gs.STREAM_HOST, gs.STREAM_PORT)
+# process = gs.raspicam_streaming_process()
 # cap_string = gs.get_caps_from_process_and_wait(process)
 # print(cap_string)
 
