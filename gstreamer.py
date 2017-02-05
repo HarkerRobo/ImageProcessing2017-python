@@ -1,12 +1,10 @@
 """
-This file contains utilities for creating gstreamer processes for
+This file contains utilities for creating gstreamer pipelines for
 streaming camera outputs.
 """
 
 import os
-import re
 import threading
-from subprocess import PIPE, Popen
 
 import gi
 from gi.repository import Gst
@@ -41,32 +39,6 @@ def delete_socket():
         os.remove(SOCKET_PATH)
     except FileNotFoundError:
         pass
-
-def raspicam_command(**kwargs):
-    """
-    Return the command to generate h.264-encoded video from the
-    Raspberry Pi camera and output it to stdout.
-
-    However, for some reason, setting a low shutterspeed makes the
-    stream very slow. Therefore, this function is deprecated and using a
-    pipeline via the gstreamer api with the raspicam_streaming_pipeline
-    is prefered.
-
-    The keword arguments taken are as follows: bitrate, framerate,
-    width, height, iso, shutter.
-    """
-    return (
-        'raspivid --timeout 0 ' # No timeout
-        '--bitrate {bitrate} ' # 2 Mbps bitrate (after h.264 encoding)
-        '--framerate {framerate} '
-        '--width {width} --height {height} '
-        '--ev -1 '
-        '--exposure off ' # Turn off auto exposure
-        '--ISO {iso} ' # 1200 ISO
-        '--shutter {shutter} ' # 2 millisecond shutterspeed
-        '-n ' # No preview on HDMI output
-        '-o - | ' # Stream to pipe
-    ).format(**merge_defaults(kwargs))
 
 def webcam_streaming_command(**kwargs):
     """
@@ -149,74 +121,6 @@ def raspicam_streaming_pipeline(**kwargs):
     height, framerate, host, port
     """
     return Gst.parse_launch(raspicam_streaming_command(**kwargs))
-
-def raspicam_streaming_process(**kwargs):
-    """
-    Create a subprocess to stream the raspberry pi camera, outputting
-    the same streams as the webcam.
-
-    The keword arguments taken are as follows: bitrate, framerate,
-    width, height, iso, shutter.
-
-    As raspicam_command is deprecated, this function has no other use
-    and is also deprecated in favor of raspicam_streaming_pipeline.
-    """
-    command = (
-        raspicam_command(**kwargs) + GSTREAMER_LAUNCH_COMMAND +
-        'rpicamsrc'
-        # Get stream from raspivid process
-        'fdsrc ! h264parse ! '
-        # Copy the stream to two different outputs
-        'tee name=t ! queue ! '
-        # Convert to rtp packets
-        'rtph264pay pt=96 config-interval=5 ! '
-        # Stream over udp
-        'udpsink host={host} port={port} '
-        # Use other output
-        't. ! queue ! '
-        # Decode h.264
-        'omxh264dec ! '
-        # Put output in a shared memory location
-        'shmsink name={sink_name} socket-path={socket_path} '
-        'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(**dict(merge_defaults(kwargs),
-                    socket_path=SOCKET_PATH, sink_name=SINK_NAME))
-
-    return Popen(command, shell=True, stdout=PIPE)
-
-def get_caps_from_process_and_wait(proc):
-    """
-    Gets the capture filters from the given process and waits for the
-    pipeline to play.
-
-    As raspicam_streaming_process is deprecated in favor of
-    raspicam_streaming_pipeline, this function is also deprecated in
-    favor of using Gst.Pipeline.get_by_name and get_sink_caps to find
-    the caps for the pipeline returned by raspicam_streaming_process.
-    """
-    caps = None
-    while True:
-        line = proc.stdout.readline().decode('utf-8').strip()
-        # Messages about caps will contain pipeline0 since that is the name of
-        # the pipeline. To be less verbose, these messages are not printed.
-        if 'pipeline0' not in line:
-            print(line)
-        if line == '':
-            # This happens when the process is done printing out stuff. The
-            # program returns here as to not enter an infinite loop
-            return
-        if line.strip() == 'Setting pipeline to PLAYING ...':
-            return caps
-
-        try:
-            find_str = SINK_NAME + '.GstPad:sink: caps = '
-            raw_caps = (line[line.index(find_str)+len(find_str):]
-                        .strip('"') # Remove surrounding quotes if any
-                        .replace('\\', '')) # Remove backslashes that occor on
-                                            # linux environments
-            caps = re.sub(r'=\(.*?\)', '=', raw_caps)
-        except ValueError:
-            pass
 
 def webcam_loopback_command(caps):
     """

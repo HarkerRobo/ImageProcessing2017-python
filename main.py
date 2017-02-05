@@ -14,12 +14,6 @@ Gst = gs.Gst
 
 gs.delete_socket()
 
-# Code for using raspivid command below
-# process = gs.raspicam_streaming_process()
-# cap_string = gs.get_caps_from_process_and_wait(process)
-# print(cap_string)
-
-# Code for using gstreamer api is below
 pipeline = gs.raspicam_streaming_pipeline()
 pipeline.set_state(Gst.State.PLAYING)
 
@@ -62,10 +56,3 @@ while True:
     if cv2.waitKey(1) == ord('q'):
         sock.close()
         break
-
-# If you are using the raspivid command for streaming video from the
-# Rasberry Pi camera, you will need to kill gstreamer manually. I could
-# think of any way to kill GStreamer through the process given by
-# raspicam_streaming_process, however, so ideally it would be nice to
-# use something nicer.
-# os.system('killall gst-launch-1.0')
