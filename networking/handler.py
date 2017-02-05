@@ -24,8 +24,12 @@ def on_error(message):
     """Handle an error message sent to the socket."""
     print('Got error from socket: {}'.format(message[m.FIELD_ERROR]))
 
-def create_gst_handler(gs, initial_pipeline=None):
+def create_gst_handler(gs, create_pipeline, initial_pipeline=None):
     """Create a message handler for the given GStreamer pipeline.
+
+    This function takes in a function that creates the pipeline, which
+    gets passed configuration options via keyword arguments. These
+    keyword arguments will be iso, shutter, host, and port.
 
     If a pipeline that has been given is not None, then it will be
     stopped on close messages. However, while this method will set the
@@ -49,11 +53,10 @@ def create_gst_handler(gs, initial_pipeline=None):
         """Handle a message to start the GStreamer pipeline."""
         nonlocal pipeline
         on_stop(message) # First kill the pipeline if it is running
-        pipeline = gs.pipeline(
-            gs.RaspiCam(iso=message[m.FIELD_ISO], shutter=message[m.FIELD_SS])
-            + gs.Tee('t', gs.H264Stream(host=message[m.FIELD_HOST],
-                                        port=message[m.FIELD_PORT]),
-                     gs.SHMSink()))
+        pipeline = create_pipeline(iso=message[m.FIELD_ISO],
+                                   shutter=message[m.FIELD_SS],
+                                   host=message[m.FIELD_HOST],
+                                   port=message[m.FIELD_PORT])
 
         pipeline.set_state(gs.Gst.State.PLAYING)
 
