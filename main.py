@@ -37,7 +37,7 @@ cap = cv2.VideoCapture(gs.webcam_loopback_command(cap_string))
 
 # Now that the capture filters have been (hopefully) successfully
 # captured, GStreamer doesn't need to be debugged anymore and the thread
-# can be stopped.abs
+# can be stopped.
 debuggingThread.stop()
 
 # Set up server
@@ -46,7 +46,7 @@ handler = networking.create_gst_handler(gs, pipeline)
 
 acceptThread = threading.Thread(target=networking.server.AcceptClients,
                                 args=[sock, clis, handler])
-acceptThread.daemon = True
+acceptThread.daemon = True # Makes the thread quit with the current thread
 acceptThread.start()
 
 while True:
