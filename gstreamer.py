@@ -22,6 +22,7 @@ DEFAULTS = {
     'port': 5001,
     'iso': 100,
     'shutter': 2000,
+    'awb': False, # Auto white balance
     'ab': 2.5, # Blue component of white balance
     'ar': 1, # Red component of white balance
     'sink_name': SINK_NAME,
@@ -81,13 +82,18 @@ class RaspiCam(PipelinePart):
     width, height, framerate
     """
     def __new__(cls, **kwargs):
+        kw = merge_defaults(kwargs)
+        if kw['awb']:
+            awb_str = ''
+        else:
+            awb_str = 'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} '
         return super().__new__(cls, (
             'rpicamsrc preview=false exposure-mode=0 '
-            'iso={iso} shutter-speed={shutter} '
-            'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} ! '
+            + awb_str +
+            'iso={iso} shutter-speed={shutter} ! '
             'video/x-raw, format=I420, width={width}, height={height}, '
             'framerate={framerate}/1'
-        ).format(**merge_defaults(kwargs)))
+        ).format(**kw))
 
 class H264Stream(PipelinePart):
     """
