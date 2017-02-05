@@ -25,7 +25,7 @@ DEFAULTS = {
     'awb': False, # Auto white balance
     'ab': 2.5, # Blue component of white balance
     'ar': 1, # Red component of white balance
-    'expmode': 0 # 0 for manual, 1 for auto
+    'expmode': 0, # 0 for manual, 1 for auto
     'sink_name': SINK_NAME,
     'socket_path': SOCKET_PATH
 }
