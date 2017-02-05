@@ -49,10 +49,12 @@ def create_gst_handler(gs, initial_pipeline=None):
         """Handle a message to start the GStreamer pipeline."""
         nonlocal pipeline
         on_stop(message) # First kill the pipeline if it is running
-        pipeline = gs.raspicam_streaming_pipeline(
-            host=message[m.FIELD_HOST], port=message[m.FIELD_PORT],
-            iso=message[m.FIELD_ISO], shutter=message[m.FIELD_SS]
-        )
+        pipeline = gs.pipeline(
+            gs.RaspiCam(iso=message[m.FIELD_ISO], shutter=message[m.FIELD_SS])
+            + gs.Tee('t', gs.H264Stream(host=message[m.FIELD_HOST],
+                                        port=message[m.FIELD_PORT]),
+                     gs.SHMSink()))
+
         pipeline.set_state(gs.Gst.State.PLAYING)
 
     handlers = {

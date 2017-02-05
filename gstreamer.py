@@ -25,6 +25,8 @@ DEFAULTS = {
     'shutter': 2000,
     'ab': 2.5, # Blue component of white balance
     'ar': 1, # Red component of white balance
+    'sink_name': SINK_NAME,
+    'socket_path': SOCKET_PATH
 }
 
 merge_defaults = lambda k: dict(DEFAULTS, **k)
@@ -40,100 +42,116 @@ def delete_socket():
     except FileNotFoundError:
         pass
 
-def webcam_streaming_command(**kwargs):
+class PipelinePart(str):
+    """A class to aid in the construction of GStreamer pipelines.
+
+    It extends str and overides the `__add__` and `__radd__` methods, so
+    you can add them together as you would strings. For example:
+
+    >>> PipelinePart('videotestsrc') + PipelinePart('autovideosink')
+    'videotestsrc ! autovideosink'
     """
-    Return the Gstreamer pipeline that takes in the vision webcam stream
-    and outputs both an h.264-encoded stream and a raw stream to a
+
+    def __add__(self, part):
+        return str(self) + ' ! ' + str(part)
+
+    def __radd__(self, part):
+        return str(part) + ' ! ' + str(self)
+
+class Webcam(PipelinePart):
+    """
+    A GStreamer pipline part that takes in video from a webcam that
+    supports v4l2 and outputs raw video.
+
+    The optional keyword arguments taken are as follows: width, height,
+    framerate
+    """
+    def __new__(cls, **kwargs):
+        return super().__new__(cls, (
+            'v4l2src ! video/x-raw, width={width},height={height}, '
+            'framerate={framerate}/1'
+        ).format(**merge_defaults(kwargs)))
+
+class RaspiCam(PipelinePart):
+    """
+    A GStreamer pipeline part that takes in video from a Raspberry Pi
+    Camera Module and outputs raw video.
+
+    The optional keyword arguments are as follows: iso, shutter, ab, ar,
+    width, height, framerate
+    """
+    def __new__(cls, **kwargs):
+        return super().__new__(cls, (
+            'rpicamsrc preview=false exposure-mode=0 '
+            'iso={iso} shutter-speed={shutter} '
+            'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} ! '
+            'video/x-raw, format=I420, width={width}, height={height}, '
+            'framerate={framerate}/1'
+        ).format(**merge_defaults(kwargs)))
+
+class H264Stream(PipelinePart):
+    """
+    A GStreamer pipeline part that takes in raw video, encodes it to
+    h.264, and streams it over RTP over UDP to a given host and port.
+
+    The optional keyword arguments are as follows: host, port
+    """
+    def __new__(cls, **kwargs):
+        return super().__new__(cls, (
+            # Encode to h.264
+            'omxh264enc ! h264parse ! '
+            # Convert to rtp packets
+            'rtph264pay pt=96 config-interval=5 ! '
+            # Stream over udp
+            'udpsink host={host} port={port}'
+        ).format(**merge_defaults(kwargs)))
+
+class SHMSink(PipelinePart):
+    """
+    A GStreamer pipeline part that takes in raw video and dumps it to a
     shared memory location.
-
-    The keword arguments taken are as follows: width, height, host,
-    port.
     """
-    return (
-        # Take in stream from webcam
-        'v4l2src ! video/x-raw, width={width},height={height} ! '
-        # Copy the stream to two different outputs
-        'tee name=t ! queue ! '
-        # Encode one output to h.264
-        'omxh264enc ! h264parse ! '
-        # Convert to rtp packets
-        'rtph264pay pt=96 config-interval=5 ! '
-        # Stream over udp
-        'udpsink host={host} port={port} '
-        # Use other output
-        't. ! queue ! '
-        # Put output in a shared memory location
-        'shmsink name={sink_name} socket-path={socket_path} '
-        'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(**dict(merge_defaults(kwargs),
-                    socket_path=SOCKET_PATH, sink_name=SINK_NAME))
+    def __new__(cls, **kwargs):
+        return super().__new__(cls, (
+            'shmsink name={sink_name} socket-path={socket_path} '
+            'sync=true wait-for-connection=false shm-size=10000000'
+        ).format(**merge_defaults(kwargs)))
 
-def webcam_streaming_pipeline(**kwargs):
+class Tee(PipelinePart):
     """
-    Return the Gstreamer pipeline that takes in the vision webcam stream
-    and outputs both an h.264-encoded stream and a raw stream to a
-    shared memory location.
+    A Gstreamer pipeline part that takes in data, splits it into
+    multiple pads, and assigns each pad to the given pipeline parts so
+    that they can run concurrently.
 
-    The keword arguments taken are as follows: width, height, host,
-    port.
-    """
-    return Gst.parse_launch(webcam_streaming_command(**kwargs))
+    The example below will launch two windows for the stream
 
-def raspicam_streaming_command(**kwargs):
+    >>> (PipelinePart('videotestsrc') + Tee('t',
+    ... PipelinePart('autovideosink'), PipelinePart('autovideosink')))
     """
-    Create the Gstreamer pipeline that takes in the Raspberry pi camera
-    stream and outputs both an h.264-encoded stream and a raw stream to
-    a shared memory location.
+    def __new__(cls, name, *parts):
+        print(parts)
+        return super().__new__(cls, (
+            'tee name={} ! queue ! '.format(name) +
+            ' {}. ! queue ! '.format(name).join(str(p) for p in parts)
+        ))
 
-    The keword arguments are as follows: iso, shutter, ab, ar, width,
-    height, framerate, host, port
+class SHMSrc(PipelinePart):
     """
-    return (
-        # Take in stream from wraspberry pi camera
-        'rpicamsrc preview=false exposure-mode=0 '
-        'iso={iso} shutter-speed={shutter} '
-        'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} ! '
-        'video/x-raw, format=I420, width={width}, height={height}, '
-        'framerate={framerate}/1 ! '
-        # Copy the stream to two different outputs
-        'tee name=t ! queue ! '
-        # Encode one output to h.264
-        'omxh264enc ! h264parse ! '
-        # Convert to rtp packets
-        'rtph264pay pt=96 config-interval=5 ! '
-        # Stream over udp
-        'udpsink host={host} port={port} '
-        # Use other output
-        't. ! queue ! '
-        # Put output in a shared memory location
-        'shmsink name={sink_name} socket-path={socket_path} '
-        'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(**dict(merge_defaults(kwargs), socket_path=SOCKET_PATH,
-                    sink_name=SINK_NAME))
-
-def raspicam_streaming_pipeline(**kwargs):
-    """
-    Create the Gstreamer pipeline that takes in the Raspberry Pi camera
-    stream and outputs both an h.264-encoded stream and a raw stream to
-    a shared memory location.
-
-    The keword arguments are as follows: iso, shutter, ab, ar, width,
-    height, framerate, host, port
-    """
-    return Gst.parse_launch(raspicam_streaming_command(**kwargs))
-
-def webcam_loopback_command(caps):
-    """
-    Return the command used by opencv to parse the raw video from the
+    A GStreamer pipeline used by OpenCV to parse the raw video from the
     shared memory location, given capture filters.
 
     These capture filters are needed as opencv needs to know how to
     parse what is at the memory location (e.g. width and height).
     """
-    return (
-        'shmsrc socket-path={socket_path} ! '
-        '{caps} ! videoconvert ! appsink'
-    ).format(socket_path=SOCKET_PATH, caps=caps)
+    def __new__(cls, caps, **kwargs):
+        return super().__new__(cls, (
+            'shmsrc socket-path={socket_path} ! '
+            '{caps} ! videoconvert ! appsink'
+        ).format(**dict(merge_defaults(kwargs), caps=caps)))
+
+def pipeline(part):
+    """Return a GStreamer pipeline given a PipelinePart."""
+    return Gst.parse_launch(part)
 
 def get_sink_caps(element):
     """
