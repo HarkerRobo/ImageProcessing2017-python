@@ -159,7 +159,7 @@ def is_tape(contour, debug_img=None):
     color_contour(contour, 5, debug_img)
 
     # Critera 3: % error between actual aspect ratio and expected is <= 70%
-    ratio = min(w/h, h/w) # w/h ratio since w will always be less than h
+    ratio = min(rw/rh, rh/rw) # w/h ratio since w will always be less than h
 
     # Since w will usually be less but h won't, the ratio should be less
     err = (TAPE_WH_RATIO - ratio) / TAPE_WH_RATIO
@@ -277,7 +277,7 @@ def get_tape_contours_and_corners(mask, debug_img=None):
             if c is not tape_cnt and iny:
                 if tcx - x_range < cx < tcx - asqrt * MIN_PAD:
                     rest_left.append(c)
-                if tcx + asqrt * MIN_PAD< cx < tcx + x_range:
+                if tcx + asqrt * MIN_PAD < cx < tcx + x_range:
                     rest_right.append(c)
 
         lcnt, lcrn = split_tape_piece(rest_left, tape_cnt, area, debug_img=debug_img)
