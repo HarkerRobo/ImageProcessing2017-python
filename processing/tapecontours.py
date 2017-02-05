@@ -12,11 +12,14 @@ from .drawing import draw_corners
 LOW_GREEN = np.array([60, 100, 20])
 UPPER_GREEN = np.array([80, 255, 255])
 
-MAX_AREA_ERROR = 0.4 # If two contours have to be combined to form the second
-                      # rectangle, the percent error in for their areas and
+MAX_AREA_ERROR = 0.6 # If two contours have to be combined to form the second
+                      # rectangle, the percent error in for their area and
+                      # that of the first the first's
+MAX_HEIGHT_ERROR = 0.4 # If two contours have to be combined to form the second
+                      # rectangle, the percent error in for their height and
                       # that of the first the first's
 
-MIN_PAD = 2 # Percent of sqrt of contour area
+MIN_PAD = 1 # Percent of sqrt of contour area
 
 TAPE_WIDTH = 2
 TAPE_HEIGHT = 5
@@ -119,7 +122,7 @@ def is_tape(contour, debug_img=None):
     perimeter = cv2.arcLength(contour, True)
     approx = cv2.approxPolyDP(contour, 0.04 * perimeter, True)
 
-    color_contour(contour, 1, debug_img)
+    color_contour(contour, 2, debug_img)
 
     # Criteria 1: Contour has 4 or 5 contours
     center = get_center(contour)
@@ -133,14 +136,14 @@ def is_tape(contour, debug_img=None):
     if not 4 <= len(approx) <= 5:
         return False, None
 
-    color_contour(contour, 2, debug_img)
+    color_contour(contour, 3, debug_img)
 
     # Criteria 2: Contour's area is at least 80% of that of the bounding rect
     x, y, w, h = rect
     if area == 0 or w * h / area < 0.8:
         return False, None
 
-    color_contour(contour, 3, debug_img)
+    color_contour(contour, 4, debug_img)
 
     # Critera 3: % error between actual aspect ratio and expected is <= 70%
     ratio = min(w/h, h/w) # w/h ratio since w will always be less than h
@@ -152,11 +155,11 @@ def is_tape(contour, debug_img=None):
         points = [[(x, y+h)], [(x, y)], [(x+w, y)], [(x+w, y+h)]]
         # One could also return approx instead of points but approx is not
         # always accurate
-        return True, points
+        return True, approx
 
     return False, None
 
-def large_tape_piece(contours, tape_area=None, debug_img=None):
+def large_tape_piece(contours, tape_cnt=None, tape_area=None, debug_img=None):
     """
     Return the contours and corners for the piece of tape in the given
     set of contours. If none of the contours are close enough to a piece
@@ -169,12 +172,16 @@ def large_tape_piece(contours, tape_area=None, debug_img=None):
     rest = [c for c in contours]
 
     for c in contours:
-        if debug_img is not None:
-            cv2.drawContours(debug_img, [c], -1, (0, 0, 255), 1)
+        if tape_cnt is not None and tape_area is not None:
+            err1 = abs(cv2.contourArea(c) - tape_area) / tape_area
+            err2 = (abs(cv2.boundingRect(c)[3] - cv2.boundingRect(tape_cnt)[3])
+                    / tape_area)
 
-        if tape_area is not None:
-            err = abs(cv2.contourArea(c) - tape_area) / tape_area
-            if err > MAX_AREA_ERROR:
+            color_contour(c, 0, debug_img)
+            if err1 > MAX_AREA_ERROR:
+                break
+            color_contour(c, 1, debug_img)
+            if err2 > MAX_HEIGHT_ERROR:
                 break
 
         rest = rest[1:]
@@ -206,7 +213,7 @@ def split_tape_piece(contours, tape_cnt=None, tape_area=None, debug_img=None):
     if len(other_cnt) >= 2:
         combined_cnt = cv2.convexHull(
             np.concatenate((other_cnt[0], other_cnt[1])))
-        cmb_cnt, cmb_corns, _ = large_tape_piece([combined_cnt],
+        cmb_cnt, cmb_corns, _ = large_tape_piece([combined_cnt], tape_cnt,
                                                  tape_area, debug_img)
         return cmb_cnt, cmb_corns
         # if cmb_cnt is not None:
@@ -241,11 +248,12 @@ def get_tape_contours_and_corners(mask, debug_img=None):
         asqrt = np.sqrt(area)
         percent_size = np.sqrt(area / (TAPE_WIDTH*TAPE_HEIGHT))
         exact_range = TARGET_WIDTH * percent_size
-        x_range = exact_range * 1.5 / 2
-        y_range = TARGET_HEIGHT * percent_size * 1.5 / 2
+        x_range = exact_range * 1.8 / 2
+        y_range = TARGET_HEIGHT * percent_size * 1.8 / 2
 
         if debug_img is not None:
-            cv2.rectangle(debug_img, (int(tcx-x_range), int(tcy-y_range)), (int(tcx+x_range), int(tcy+y_range)), (0, 150, 0), 1)
+            cv2.rectangle(debug_img, (int(tcx-x_range), int(tcy-y_range)), (int(tcx-asqrt*MIN_PAD), int(tcy+y_range)), (0, 150, 0), 1)
+            cv2.rectangle(debug_img, (int(tcx+asqrt*MIN_PAD), int(tcy-y_range)), (int(tcx+x_range), int(tcy+y_range)), (0, 150, 0), 1)
 
         rest_left = []
         rest_right = []
@@ -271,7 +279,7 @@ def get_tape_contours_and_corners(mask, debug_img=None):
             found_contours.append(lcnt)
             found_corners.append(lcrn)
         else:
-            t2_cnt, t2_crn, _ = large_tape_piece(sorted_contours, area,
+            t2_cnt, t2_crn, _ = large_tape_piece(rest, tape_cnt, area,
                                                  debug_img=debug_img)
             if t2_cnt is not None:
                 found_contours.append(t2_cnt)
