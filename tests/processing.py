@@ -1,3 +1,11 @@
+"""
+As well as containing unit tests, this module also contains functions to
+facilitate checking the image processing algorithms for accuracy - that
+is parsing the marked images to find the manually entered coordinates of
+the pieces of tape and making sure these coordinates are close to those
+returned by the image processing algorithms.
+"""
+
 import os
 import sys
 import unittest
@@ -20,7 +28,8 @@ MH_RED = np.array([0, 100, 100])
 HIGH_RED = np.array([10, 255, 255])
 
 MAX_DIST = 50 # Maximum error between calculated corner and actual corner
-SHOW_IMAGES = False # Whether to show images for failed results
+SHOW_FAILED_IMAGES = False # Whether to show images for failed results
+SHOW_ALL_IMAGES = False # Whether to show images for all results
 
 def get_circles(img):
     """Return the positions of the red circles in an imagFe."""
@@ -86,7 +95,7 @@ class ImageTests(unittest.TestCase):
                 actual = np.array([])
 
             result = compare_corners(expected, actual)
-            if not result and SHOW_IMAGES:
+            if SHOW_ALL_IMAGES or (not result and SHOW_FAILED_IMAGES):
                 tapecontours.get_corners_from_image(original,
                                                     show_image=True)
                 cv2.waitKey(0)
