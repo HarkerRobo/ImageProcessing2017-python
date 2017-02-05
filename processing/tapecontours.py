@@ -27,7 +27,7 @@ ROT_MIN_PERCENT = 0.8 # Contour's area is >= this percent of the min area rect
 TAPE_WIDTH = 2
 TAPE_HEIGHT = 5
 TAPE_WH_RATIO = TAPE_WIDTH / TAPE_HEIGHT
-TAPE_ACCEPTABLE_ERROR = 0.4 # The maximum percent error for the ratio of the
+TAPE_ACCEPTABLE_ERROR = 0.6 # The maximum percent error for the ratio of the
                             # target's width to height
 
 # Tape area is 10-1/4 in by 5 in
