@@ -13,14 +13,14 @@ PORT = 6000
 BACKLOG = 5 # Maximum number of clients
 SIZE = 1024 # Maximum message size
 
-def create_socket_and_client_list():
+def create_socket_and_client_list(host=HOST, port=PORT, backlog=BACKLOG):
     """
     Create a socket that listens on the port and host specified as
     constants then return the socket and an arrray for clients.
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((HOST, PORT))
-    s.listen(BACKLOG)
+    s.bind((host, port))
+    s.listen(backlog)
     clients = [s]
     return (s, clients)
 
