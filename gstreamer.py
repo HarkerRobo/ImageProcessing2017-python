@@ -7,7 +7,6 @@ import os
 import threading
 
 import gi
-from gi.repository import Gst
 
 SOCKET_PATH = '/tmp/foo'
 SINK_NAME = 'pipesink'
@@ -32,6 +31,7 @@ DEFAULTS = {
 merge_defaults = lambda k: dict(DEFAULTS, **k)
 
 gi.require_version('Gst', '1.0')
+from gi.repository import Gst
 Gst.init(None)
 
 def delete_socket():
