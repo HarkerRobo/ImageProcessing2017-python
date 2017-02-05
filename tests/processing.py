@@ -19,7 +19,7 @@ ML_RED = np.array([179, 255, 255])
 MH_RED = np.array([0, 100, 100])
 HIGH_RED = np.array([10, 255, 255])
 
-MAX_DIST = 20 # Maximum error between calculated corner and actual corner
+MAX_DIST = 50 # Maximum error between calculated corner and actual corner
 SHOW_IMAGES = True # Whether to show images for failed results
 
 def get_circles(img):
@@ -75,8 +75,11 @@ class ImageTests(unittest.TestCase):
 
                 # Find the circles
                 expected = get_circles(marked)
-                actual = np.concatenate(tapecontours.get_corners_from_image(
-                    original, show_image=False))
+                try:
+                    actual = np.concatenate(tapecontours.get_corners_from_image(
+                        original, show_image=False))
+                except ValueError:
+                    actual = np.array([])
 
                 result = compare_corners(expected, actual)
                 if not result and SHOW_IMAGES:

@@ -155,7 +155,7 @@ def is_tape(contour, debug_img=None):
         points = [[(x, y+h)], [(x, y)], [(x+w, y)], [(x+w, y+h)]]
         # One could also return approx instead of points but approx is not
         # always accurate
-        return True, approx
+        return True, points
 
     return False, None
 
