@@ -1,17 +1,11 @@
 """
-This program serves streams from the camera as well as processing them
-and sending results back to clients connected to a server.
+This program serves a stream of the camera with autofocus turned off.
 """
 
 import threading
-import cv2
 import gstreamer as gs
 import networking
-import networking.messages as m
-from processing.tapecontours import get_corners_from_image
 Gst = gs.Gst
-
-gs.delete_socket()
 
 def create_pipeline(**kwargs):
     """Create the pipeline that will be instantiated over messages from
@@ -21,8 +15,8 @@ def create_pipeline(**kwargs):
     For more information, see networking.create_gst_handler.
     """
     return gs.pipeline(
-        gs.RaspiCam(**kwargs) +
-        gs.Tee('t', gs.H264Stream(**kwargs), gs.SHMSink())
+        gs.RaspiCam(awb=True, expmode=1) +
+        gs.H264Stream(**dict({'port': 5002}, **kwargs)) # Default to port 5002
     )
 
 pipeline = create_pipeline()
@@ -35,14 +29,9 @@ debuggingThread.start()
 # TODO: Find a better method to wait for playback to start
 print(pipeline.get_state(Gst.CLOCK_TIME_NONE)) # Wait for pipeline to play
 
-caps = gs.get_sink_caps(pipeline.get_by_name(gs.SINK_NAME))
-cap_string = gs.make_command_line_parsable(caps)
-
-cap = cv2.VideoCapture(gs.SHMSrc(cap_string))
-
-# Now that the capture filters have been (hopefully) successfully
-# captured, GStreamer doesn't need to be debugged anymore and the thread
-# can be stopped.
+# Now that the pipeline has been (hopefully) successfully started,
+# GStreamer doesn't need to be debugged anymore and the thread can be
+# stopped.
 debuggingThread.stop()
 
 # Set up server
@@ -54,16 +43,5 @@ acceptThread = threading.Thread(target=networking.server.AcceptClients,
 acceptThread.daemon = True # Makes the thread quit with the current thread
 acceptThread.start()
 
-while True:
-    _, img = cap.read()
-    cv2.imshow('original', img)
-    corners = get_corners_from_image(img, show_image=True)
-
-    # Send the coordinates to the roborio
-    corns = [[(int(a[0]), int(a[1])) for a in b] for b in corners]
-    message = m.create_message(m.TYPE_RESULTS, {m.FIELD_CORNERS: corns})
-    networking.server.broadcast(sock, clis, message)
-
-    if cv2.waitKey(1) == ord('q'):
-        sock.close()
-        break
+input('Streaming... Press enter to quit.')
+sock.close()
