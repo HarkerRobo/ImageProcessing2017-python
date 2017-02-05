@@ -129,10 +129,9 @@ class Tee(PipelinePart):
     ... PipelinePart('autovideosink'), PipelinePart('autovideosink')))
     """
     def __new__(cls, name, *parts):
-        print(parts)
         return super().__new__(cls, (
             'tee name={} ! queue ! '.format(name) +
-            ' {}. ! queue ! '.format(name).join(str(p) for p in parts)
+            ' {}. ! queue ! '.format(name).join(parts)
         ))
 
 class SHMSrc(PipelinePart):
