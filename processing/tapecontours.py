@@ -137,7 +137,7 @@ def is_tape(contour, debug_img=None):
 
     # Criteria 2: Contour's area is at least 80% of that of the bounding rect
     x, y, w, h = rect
-    if w * h / area < 0.8:
+    if area == 0 or w * h / area < 0.8:
         return False, None
 
     color_contour(contour, 3, debug_img)
@@ -275,7 +275,7 @@ def get_tape_contours_and_corners(mask, debug_img=None):
                                                  debug_img=debug_img)
             if t2_cnt is not None:
                 found_contours.append(t2_cnt)
-                found_contours.append(t2_crn)
+                found_corners.append(t2_crn)
 
     if debug_img is not None:
         cv2.drawContours(debug_img, found_contours, -1, (255, 0, 0), 1)
