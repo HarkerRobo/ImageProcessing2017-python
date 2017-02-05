@@ -25,6 +25,7 @@ DEFAULTS = {
     'awb': False, # Auto white balance
     'ab': 2.5, # Blue component of white balance
     'ar': 1, # Red component of white balance
+    'expmode': 0 # 0 for manual, 1 for auto
     'sink_name': SINK_NAME,
     'socket_path': SOCKET_PATH
 }
@@ -88,7 +89,7 @@ class RaspiCam(PipelinePart):
         else:
             awb_str = 'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} '
         return super().__new__(cls, (
-            'rpicamsrc preview=false exposure-mode=0 '
+            'rpicamsrc preview=false exposure-mode={expmode} '
             + awb_str +
             'iso={iso} shutter-speed={shutter} ! '
             'video/x-raw, format=I420, width={width}, height={height}, '
