@@ -149,7 +149,10 @@ def is_tape(contour, debug_img=None):
     err = (TAPE_WH_RATIO - ratio) / TAPE_WH_RATIO
 
     if abs(err) < TAPE_ACCEPTABLE_ERROR:
-        return True, approx
+        points = [[(x, y+h)], [(x, y)], [(x+w, y)], [(x+w, y+h)]]
+        # One could also return approx instead of points but approx is not
+        # always accurate
+        return True, points
 
     return False, None
 
