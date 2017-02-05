@@ -138,9 +138,9 @@ def is_tape(contour, debug_img=None):
 
     color_contour(contour, 3, debug_img)
 
-    # Criteria 2: Contour's area is at least 80% of that of the bounding rect
+    # Criteria 2: Contour's area is at least 70% of that of the bounding rect
     x, y, w, h = rect
-    if area == 0 or w * h / area < 0.8:
+    if area == 0 or area / w / h < 0.7:
         return False, None
 
     color_contour(contour, 4, debug_img)
