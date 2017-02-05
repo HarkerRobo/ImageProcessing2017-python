@@ -21,6 +21,9 @@ MAX_HEIGHT_ERROR = 0.4 # If two contours have to be combined to form the second
 
 MIN_PAD = 1 # Percent of sqrt of contour area
 
+BOUND_MIN_PERCENT = 0.7 #Contour's area is >= this percent of the bounding rect
+ROT_MIN_PERCENT = 0.8 # Contour's area is >= this percent of the min area rect
+
 TAPE_WIDTH = 2
 TAPE_HEIGHT = 5
 TAPE_WH_RATIO = TAPE_WIDTH / TAPE_HEIGHT
@@ -102,6 +105,8 @@ def color_contour(contour, n, img):
     of n the contour will be drawn more green instead of red.
     """
     if img is not None:
+        green = 0
+        red = 0
         if n < 5:
             green = n * 51
             red = 255
@@ -118,6 +123,7 @@ def is_tape(contour, debug_img=None):
     This function also returns the bounding rect points upon success.
     """
     rect = cv2.boundingRect(contour)
+    rot_rect = cv2.minAreaRect(contour)
     area = cv2.contourArea(contour)
     perimeter = cv2.arcLength(contour, True)
     approx = cv2.approxPolyDP(contour, 0.04 * perimeter, True)
@@ -140,10 +146,17 @@ def is_tape(contour, debug_img=None):
 
     # Criteria 2: Contour's area is at least 70% of that of the bounding rect
     x, y, w, h = rect
-    if area == 0 or area / w / h < 0.7:
+    if area == 0 or area / w / h < BOUND_MIN_PERCENT:
         return False, None
 
     color_contour(contour, 4, debug_img)
+
+    # Criteria 3: Contour's area is at least 80% of the min area rect
+    _, (rw, rh), _ = rot_rect
+    if area == 0 or area / rw / rh < ROT_MIN_PERCENT:
+        return False, None
+
+    color_contour(contour, 5, debug_img)
 
     # Critera 3: % error between actual aspect ratio and expected is <= 70%
     ratio = min(w/h, h/w) # w/h ratio since w will always be less than h
