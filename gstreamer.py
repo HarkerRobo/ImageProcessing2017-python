@@ -10,6 +10,7 @@ import gi
 
 SOCKET_PATH = '/tmp/foo'
 SINK_NAME = 'pipesink'
+SRC_NAME = 'pipesrc'
 GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v -e '
 
 # Set of defaults used for all methods; adjustable via parameters
@@ -27,6 +28,7 @@ DEFAULTS = {
     'ar': 1, # Red component of white balance
     'expmode': 0, # 0 for manual, 1 for auto
     'sink_name': SINK_NAME,
+    'src_name': SRC_NAME,
     'socket_path': SOCKET_PATH
 }
 
@@ -70,8 +72,8 @@ class Webcam(PipelinePart):
     """
     def __new__(cls, **kwargs):
         return super().__new__(cls, (
-            'v4l2src ! video/x-raw, width={width},height={height}, '
-            'framerate={framerate}/1'
+            'v4l2src name={src_name}! video/x-raw,width={width},'
+            'height={height},framerate={framerate}/1'
         ).format(**merge_defaults(kwargs)))
 
 class RaspiCam(PipelinePart):
@@ -89,9 +91,9 @@ class RaspiCam(PipelinePart):
         else:
             awb_str = 'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} '
         return super().__new__(cls, (
-            'rpicamsrc preview=false exposure-mode={expmode} '
+            'rpicamsrc name={src_name} preview=false '
             + awb_str +
-            'iso={iso} shutter-speed={shutter} ! '
+            'exposure-mode={expmode} iso={iso} shutter-speed={shutter} ! '
             'video/x-raw, format=I420, width={width}, height={height}, '
             'framerate={framerate}/1'
         ).format(**kw))
@@ -154,6 +156,19 @@ class SHMSrc(PipelinePart):
             'shmsrc socket-path={socket_path} ! '
             '{caps} ! videoconvert ! appsink'
         ).format(**dict(merge_defaults(kwargs), caps=caps)))
+
+class Valve(PipelinePart):
+    """
+    Represents a valve element for GStreamer.
+
+    This class takes two parameters: a required name for the valve and
+    the initial state of the drop property (whether to drop buffers and
+    events), which defaults to False.
+    """
+    def __new__(cls, name, drop=False):
+        return super().__new__(cls, (
+            'valve name={} drop={}'
+        )).format(name, 'true' if drop else 'false')
 
 def pipeline(part):
     """Return a GStreamer pipeline given a PipelinePart."""
