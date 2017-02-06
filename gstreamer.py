@@ -11,6 +11,7 @@ import gi
 SOCKET_PATH = '/tmp/foo'
 SINK_NAME = 'pipesink'
 SRC_NAME = 'pipesrc'
+UDP_NAME = 'udpsink0'
 GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v -e '
 
 # Set of defaults used for all methods; adjustable via parameters
@@ -29,6 +30,7 @@ DEFAULTS = {
     'expmode': 0, # 0 for manual, 1 for auto
     'sink_name': SINK_NAME,
     'src_name': SRC_NAME,
+    'udp_name': UDP_NAME,
     'socket_path': SOCKET_PATH
 }
 
@@ -112,7 +114,7 @@ class H264Stream(PipelinePart):
             # Convert to rtp packets
             'rtph264pay pt=96 config-interval=5 ! '
             # Stream over udp
-            'udpsink host={host} port={port}'
+            'udpsink name={udp_name} host={host} port={port}'
         ).format(**merge_defaults(kwargs)))
 
 class SHMSink(PipelinePart):

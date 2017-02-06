@@ -24,41 +24,46 @@ def on_error(message):
     """Handle an error message sent to the socket."""
     print('Got error from socket: {}'.format(message[m.FIELD_ERROR]))
 
-def create_gst_handler(gs, create_pipeline, initial_pipeline=None):
+def create_gst_handler(pipeline, src_name=None, valve_name=None,
+                       udp_name=None):
     """Create a message handler for the given GStreamer pipeline.
 
-    This function takes in a function that creates the pipeline, which
-    gets passed configuration options via keyword arguments. These
-    keyword arguments will be iso, shutter, host, and port.
+    Besides the required pipeline, which should already be started, this
+    function also takes in the names of three elements in the pipeline:
 
-    If a pipeline that has been given is not None, then it will be
-    stopped on close messages. However, while this method will set the
-    pipeline to None when it is stopped, this change will not be
-    reflected outside the function, although the pipeline's state will
-    be Gst.State.NULL.
+     * A camera source that supports iso and shutter-speed properties
+       (the only source the code supports for now is the rpicamsrc),
+     * A valve to control the streaming of the video
+     * A udpsink (or any sink that has a host and port property) that
+       streams the video to a client
 
-    This function also takes in the gs module as it will be outside this
-    module.
+    If any one of these names is set to None, or simply not provided,
+    then the code will not handle messages that are meant to change
+    elements with the name. For example, if you are using a camera that
+    does not support settings iso and shutter speed, then not providing
+    a src_name will make the code not handle setting the iso and
+    shutterspeed of the camera, but will not break anything else.
     """
-    pipeline = initial_pipeline # Rename the argument so code is more readable
 
     def on_stop(_):
         """Handle a message to stop the GStreamer pipeline."""
-        nonlocal pipeline
-        if pipeline is not None:
-            pipeline.set_state(gs.Gst.State.NULL)
-            pipeline = None
+        if valve_name is not None:
+            pipeline.get_by_name(valve_name).set_property('drop', True)
 
     def on_start(message):
         """Handle a message to start the GStreamer pipeline."""
-        nonlocal pipeline
-        on_stop(message) # First kill the pipeline if it is running
-        pipeline = create_pipeline(iso=message[m.FIELD_ISO],
-                                   shutter=message[m.FIELD_SS],
-                                   host=message[m.FIELD_HOST],
-                                   port=message[m.FIELD_PORT])
+        if src_name is not None:
+            src = pipeline.get_by_name(src_name)
+            src.set_property('iso', message[m.FIELD_ISO])
+            src.set_property('shutter-speed', message[m.FIELD_SS])
 
-        pipeline.set_state(gs.Gst.State.PLAYING)
+        if udp_name is not None:
+            udp = pipeline.get_by_name(udp_name)
+            udp.set_property('host', message[m.FIELD_HOST])
+            udp.set_property('port', message[m.FIELD_PORT])
+
+        if valve_name is not None:
+            pipeline.get_by_name(valve_name).set_propety('drop', False)
 
     handlers = {
         m.TYPE_ERROR: on_error,
