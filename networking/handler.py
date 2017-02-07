@@ -76,6 +76,7 @@ def create_gst_handler(pipeline, src_name=None, valve_name=None,
 
         This function will be returned by surrounding function.
         """
+        print(message_str)
         try:
             message = m.parse_message(message_str)
             handlers[message[m.FIELD_TYPE]](message)
