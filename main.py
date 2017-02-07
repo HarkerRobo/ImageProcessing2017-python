@@ -46,7 +46,6 @@ if __name__ == '__main__':
     handler = networking.create_gst_handler(pipeline, gs.SRC_NAME, 'valve',
                                             gs.UDP_NAME)
 
-# <<<<<<< Updated upstream
     acceptThread = threading.Thread(target=networking.server.AcceptClients,
                                     args=[sock, clis, handler])
     acceptThread.daemon = True # Makes the thread quit with the current thread
@@ -56,16 +55,10 @@ if __name__ == '__main__':
         _, img = cap.read()
         cv2.imshow('original', img)
         corners = get_corners_from_image(img, show_image=True)
-# =======
         acceptThread = threading.Thread(target=networking.server.AcceptClients,
                                 args=[sock, clis, handler])
         acceptThread.daemon = True
         acceptThread.start()
-#
-# while True:
-#     _, img = cap.read()
-#     cv2.imshow('original', img)
-#     corners = get_corners_from_image(img, show_image=True)
 #
 #     # Send the coordinates to the roborio
         corns = np.array(corners).tolist()
@@ -75,8 +68,7 @@ if __name__ == '__main__':
         if cv2.waitKey(1) == ord('q'):
             sock.close()
             break
-# >>>>>>> Stashed changes
-#
+            
 #         # Send the coordinates to the roborio
         # corns = [[(int(a[0]), int(a[1])) for a in b] for b in corners]
         # message = m.create_message(m.TYPE_RESULTS, {m.FIELD_CORNERS: corns})
