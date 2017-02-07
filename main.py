@@ -58,7 +58,7 @@ if __name__ == '__main__':
         corners = get_corners_from_image(img, show_image=True)
 # =======
         acceptThread = threading.Thread(target=networking.server.AcceptClients,
-#                                 args=[sock, clis, handler])
+                                args=[sock, clis, handler])
         acceptThread.daemon = True
         acceptThread.start()
 #
