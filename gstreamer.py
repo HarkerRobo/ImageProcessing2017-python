@@ -14,7 +14,6 @@ SRC_NAME = 'pipesrc'
 UDP_NAME = 'udpsink0'
 GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v -e '
 
-<<<<<<< Updated upstream
 # Set of defaults used for all methods; adjustable via parameters
 DEFAULTS = {
     'width': 640,
@@ -36,15 +35,6 @@ DEFAULTS = {
 }
 
 merge_defaults = lambda k: dict(DEFAULTS, **k)
-=======
-# Defaults; can be overriden by parameters
-STREAM_HOST = '192.168.1.123'
-STREAM_PORT = 5001
-ISO = 100
-SHUTTER_SPEED = 2000
-AWB_BLUE = 2.5
-AWB_RED = 1
->>>>>>> Stashed changes
 
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst
@@ -115,7 +105,6 @@ class H264Stream(PipelinePart):
     A GStreamer pipeline part that takes in raw video, encodes it to
     h.264, and streams it over RTP over UDP to a given host and port.
 
-<<<<<<< Updated upstream
     The optional keyword arguments are as follows: host, port
     """
     def __new__(cls, **kwargs):
@@ -129,57 +118,15 @@ class H264Stream(PipelinePart):
         ).format(**merge_defaults(kwargs)))
 
 class SHMSink(PipelinePart):
-=======
-def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
-                               iso=ISO, shutter=SHUTTER_SPEED,
-                               awb_blue=AWB_BLUE, awb_red=AWB_RED):
-    """
-    Create the Gstreamer pipeline that takes in the Raspberry pi camera
-    stream and outputs both an h.264-encoded stream and a raw stream to
-    a shared memory location.
-    """
-    return (
-        # Take in stream from wraspberry pi camera
-        'rpicamsrc preview=false exposure-mode=0 '
-        'iso={iso} shutter-speed={shutter} '
-        'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} ! '
-        'video/x-raw, format=I420, width=640, height=320, framerate=15/1 ! '
-        # Copy the stream to two different outputs
-        'tee name=t ! queue ! '
-        # Encode one output to h.264
-        'omxh264enc ! h264parse ! '
-        # Convert to rtp packets
-        'rtph264pay pt=96 config-interval=5 ! '
-        # Stream over udp
-        'udpsink host={host} port={port} '
-        # Use other output
-        't. ! queue ! '
-        # Put output in a shared memory location
-        'shmsink name={sink_name} socket-path={socket_path} '
-        'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(host=host, port=port, socket_path=SOCKET_PATH,
-             sink_name=SINK_NAME, iso=iso, shutter=shutter,
-             ab=AWB_BLUE, ar=AWB_RED)
-
-def raspicam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT,
-                                iso=ISO, shutter=SHUTTER_SPEED,
-                                awb_blue=AWB_BLUE, awb_red=AWB_RED):
->>>>>>> Stashed changes
     """
     A GStreamer pipeline part that takes in raw video and dumps it to a
     shared memory location.
     """
-<<<<<<< Updated upstream
     def __new__(cls, **kwargs):
         return super().__new__(cls, (
             'shmsink name={sink_name} socket-path={socket_path} '
             'sync=true wait-for-connection=false shm-size=10000000'
         ).format(**merge_defaults(kwargs)))
-=======
-    return Gst.parse_launch(
-        raspicam_streaming_command(host, port, iso, shutter,
-                                   awb_blue, awb_red))
->>>>>>> Stashed changes
 
 class Tee(PipelinePart):
     """

@@ -5,7 +5,6 @@ and sending results back to clients connected to a server.
 
 import threading
 import cv2
-import numpy as np
 import gstreamer as gs
 import networking
 import networking.messages as m
@@ -55,25 +54,12 @@ if __name__ == '__main__':
         _, img = cap.read()
         cv2.imshow('original', img)
         corners = get_corners_from_image(img, show_image=True)
-        acceptThread = threading.Thread(target=networking.server.AcceptClients,
-                                args=[sock, clis, handler])
-        acceptThread.daemon = True
-        acceptThread.start()
-#
-#     # Send the coordinates to the roborio
-        corns = np.array(corners).tolist()
+
+        # Send the coordinates to the roborio
+        corns = [[(int(a[0]), int(a[1])) for a in b] for b in corners]
         message = m.create_message(m.TYPE_RESULTS, {m.FIELD_CORNERS: corns})
         networking.server.broadcast(sock, clis, message)
 
         if cv2.waitKey(1) == ord('q'):
             sock.close()
             break
-            
-#         # Send the coordinates to the roborio
-        # corns = [[(int(a[0]), int(a[1])) for a in b] for b in corners]
-        # message = m.create_message(m.TYPE_RESULTS, {m.FIELD_CORNERS: corns})
-        # networking.server.broadcast(sock, clis, message)
-#
-#         if cv2.waitKey(1) == ord('q'):
-#             sock.close()
-#             break
