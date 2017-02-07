@@ -11,6 +11,7 @@ from .drawing import draw_corners
 
 LOW_GREEN = np.array([60, 100, 20])
 UPPER_GREEN = np.array([80, 255, 255])
+<<<<<<< Updated upstream
 
 MAX_AREA_ERROR = 0.6 # If two contours have to be combined to form the second
                       # rectangle, the percent error in for their area and
@@ -29,6 +30,16 @@ TAPE_HEIGHT = 5
 TAPE_WH_RATIO = TAPE_WIDTH / TAPE_HEIGHT
 TAPE_ACCEPTABLE_ERROR = 0.6 # The maximum percent error for the ratio of the
                             # target's width to height
+=======
+MIN_PERCENT = 0.7 # After the first rectangle is detected, the second
+                  # rectangle's area must be above this percent of the first's
+>>>>>>> Stashed changes
+
+TAPE_WIDTH = 2
+TAPE_HEIGHT = 5
+TAPE_WH_RATIO = TAPE_WIDTH / TAPE_HEIGHT
+TAPE_ACCEPTABLE_ERROR = 0.2 # The maximum percent error for the ratio of the
+                              # target's width to height
 
 # Tape area is 10-1/4 in by 5 in
 TARGET_SCALE = 10
@@ -56,7 +67,11 @@ def get_target_corners(img):
     )
 
 def get_width_height_ratio(points):
+<<<<<<< Updated upstream
     """Return the ratio of the width of the rectangle approximating the
+=======
+    """Returns the ratio of the width of the rectangle approximating the
+>>>>>>> Stashed changes
     four given points to the height."""
     rect = cv2.minAreaRect(points)
     dims = rect[1]
@@ -64,6 +79,7 @@ def get_width_height_ratio(points):
         return 0
     return dims[0] / dims[1]
 
+<<<<<<< Updated upstream
 def getX(point):
     """Return the x value of a point."""
     return point[0]
@@ -90,6 +106,8 @@ def get_distance(cnt, center):
     ydiff = center[1] - cnt_center[1]
     return np.sqrt(xdiff**2 + ydiff**2)
 
+=======
+>>>>>>> Stashed changes
 def get_mask(img):
     """Return a mask were the green parts of the image are white and the
     non-green parts are black.
@@ -248,6 +266,7 @@ def get_tape_contours_and_corners(mask, debug_img=None):
     found_contours = []
     found_corners = []
 
+<<<<<<< Updated upstream
     tape_cnt, tape_crn, rest = large_tape_piece(sorted_contours,
                                                 debug_img=debug_img)
 
@@ -297,6 +316,39 @@ def get_tape_contours_and_corners(mask, debug_img=None):
             if t2_cnt is not None:
                 found_contours.append(t2_cnt)
                 found_corners.append(t2_crn)
+=======
+    for c in sorted_contours:
+        # If the current contour is too small compared to the found
+        # contour to be a piece of tape, discard it
+        if len(found_contours) == 1:
+            area = cv2.contourArea(found_contours[0])
+            if area == 0:
+                break # So there isn't a ZeroDivisionError
+            ratio = cv2.contourArea(c) / area
+            if ratio <= MIN_PERCENT:
+                break
+        # Check if the countour has four courners
+        perimeter = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.02 * perimeter, True)
+
+        # If it does save it
+        if len(approx) == 4:
+            cv2.drawContours(debug_img, [c], -1, (0, 0, 255), 1)
+            # Check that the shape of the object matches that of the
+            # target Since the width and height could be reversed,
+            # 1/ratio must also be checked.
+            ratio = get_width_height_ratio(approx)
+            err1 = abs(ratio - TAPE_WH_RATIO) / TAPE_WH_RATIO
+            err2 = abs(1/ratio - TAPE_WH_RATIO) / TAPE_WH_RATIO
+            if err1 > TAPE_ACCEPTABLE_ERROR and err2 > TAPE_ACCEPTABLE_ERROR:
+                continue # Skip the object if it does not
+
+            found_contours.append(c)
+            found_corners.append(corners_to_tuples(approx))
+            # If there are already 2 rectangles then break
+            if len(found_contours) == 2:
+                break
+>>>>>>> Stashed changes
 
     if debug_img is not None:
         cv2.drawContours(debug_img, found_contours, -1, (255, 0, 0), 1)

@@ -57,7 +57,11 @@ def AcceptClients(server_socket, clients, on_new_message):
                     try:
                         on_new_message(x, data.decode('utf-8'))
                     except UnicodeDecodeError:
+<<<<<<< Updated upstream
                         print('Unicode error')
+=======
+                        pass
+>>>>>>> Stashed changes
                 else:
                     # Client has disconnected
                     x.close()
