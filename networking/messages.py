@@ -67,7 +67,7 @@ def parse_message(message_str):
         if field not in message:
             raise ValueError(
                 'Message does not contain required field {}'.format(field))
-        if type(message[field] is not message_schema[field]):
+        if type(message[field]) is not type(message_schema[field]):
             raise ValueError((
                 'Field {} is of type {.__name__} and not of type {.__name__}'
                 ).format(field, message_schema[field]))
