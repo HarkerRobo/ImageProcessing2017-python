@@ -1,4 +1,5 @@
 # 2017 Image processing code
+[![forthebadge](http://forthebadge.com/images/badges/made-with-python.svg)](http://forthebadge.com)
 
 This will probably end up being the vision code we use for 2017.
 
