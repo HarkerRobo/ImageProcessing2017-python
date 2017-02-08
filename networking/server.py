@@ -1,5 +1,5 @@
 """
-Code to launch the tcp socket server that will both manage streaming and
+Code to launch the TCP socket server that will both manage streaming and
 send image processing results to the roborio
 """
 
@@ -13,28 +13,28 @@ PORT = 6000
 BACKLOG = 5 # Maximum number of clients
 SIZE = 1024 # Maximum message size
 
-def create_socket_and_client_list():
+def create_socket_and_client_list(host=HOST, port=PORT, backlog=BACKLOG):
     """
-    Creates a socket that listens on the port and host specified as
-    constants then returns the socket and an arrray for clients.
+    Create a socket that listens on the port and host specified as
+    constants then return the socket and an arrray for clients.
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((HOST, PORT))
-    s.listen(BACKLOG)
+    s.bind((host, port))
+    s.listen(backlog)
     clients = [s]
     return (s, clients)
 
 def broadcast(server_socket, clients, message):
     """
-    Sends a message to all given clients.
+    Send a message to all given clients.
     """
     for i in clients:
         if i is not server_socket:
-            i.send(message)
+            i.send(message.encode('utf-8'))
 
 def AcceptClients(server_socket, clients, on_new_message):
     """
-    Accepts connections from clients, calling a given function when a
+    Accept connections from clients, calling a given function when a
     new message is received. This function should take two parameters -
     the socket that sent the data and the data that was sent.
 
@@ -54,7 +54,10 @@ def AcceptClients(server_socket, clients, on_new_message):
                 data = x.recv(SIZE)
                 if data:
                     # Client has sent something
-                    on_new_message(x, data)
+                    try:
+                        on_new_message(x, data.decode('utf-8'))
+                    except UnicodeDecodeError:
+                        print('Unicode error')
                 else:
                     # Client has disconnected
                     x.close()
@@ -73,7 +76,7 @@ if __name__ == '__main__':
 
     try:
         while True:
-            broadcast(sock, clis, b'hi\n')
+            broadcast(sock, clis, 'hi\n')
             time.sleep(1)
     except KeyboardInterrupt:
         pass

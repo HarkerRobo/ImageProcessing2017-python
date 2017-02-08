@@ -1,192 +1,184 @@
 """
-This file contains utilities for creating gstreamer processes for
+This file contains utilities for creating gstreamer pipelines for
 streaming camera outputs.
 """
 
-import re
-from subprocess import Popen, PIPE
+import os
+import threading
+
 import gi
 
 SOCKET_PATH = '/tmp/foo'
-STREAM_HOST = '192.168.1.123'
-STREAM_PORT = 5001
 SINK_NAME = 'pipesink'
+SRC_NAME = 'pipesrc'
+UDP_NAME = 'udpsink0'
 GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v -e '
-ISO = 100
-SHUTTER_SPEED = 2000
+
+# Set of defaults used for all methods; adjustable via parameters
+DEFAULTS = {
+    'width': 640,
+    'height': 480,
+    'bitrate': 2000000, # 2 Mbps (after h.264 encoding)
+    'framerate': 15,
+    'host': '192.168.1.123',
+    'port': 5001,
+    'iso': 100,
+    'shutter': 2000,
+    'awb': False, # Auto white balance
+    'ab': 2.5, # Blue component of white balance
+    'ar': 1, # Red component of white balance
+    'expmode': 0, # 0 for manual, 1 for auto
+    'sink_name': SINK_NAME,
+    'src_name': SRC_NAME,
+    'udp_name': UDP_NAME,
+    'socket_path': SOCKET_PATH
+}
+
+merge_defaults = lambda k: dict(DEFAULTS, **k)
 
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst
 Gst.init(None)
 
-def raspicam_command(iso=ISO, shutter=SHUTTER_SPEED):
-    """
-    Creates the command to generate h.264-encoded video from the
-    Raspberry Pi camera and output it to stdout.
+def delete_socket():
+    """Delete the file that is used for communication for the shared
+    memory location."""
+    try:
+        os.remove(SOCKET_PATH)
+    except FileNotFoundError:
+        pass
 
-    However, for some reason, setting a low shutterspeed makes the
-    stream very slow. Therefore, this function is deprecated and using a
-    pipeline via the gstreamer api with the raspicam_streaming_pipeline
-    is prefered.
-    """
-    return (
-        'raspivid --timeout 0 ' # No timeout
-        '--bitrate 2000000 ' # 2 Mbps bitrate (after h.264 encoding)
-        '--framerate 15 '
-        '--width 640 --height 480 '
-        '--ev -1 '
-        '--exposure off ' # Turn off auto exposure
-        '--ISO {iso} ' # 1200 ISO
-        '--shutter {shutter} ' # 2 millisecond shutterspeed
-        '-n ' # No preview on HDMI output
-        '-o - | ' # Stream to pipe
-    ).format(shutter=shutter, iso=iso)
+class PipelinePart(str):
+    """A class to aid in the construction of GStreamer pipelines.
 
-def webcam_streaming_command(host=STREAM_HOST, port=STREAM_PORT):
-    """
-    Creates the Gstreamer pipeline that takes in the vision webcam
-    stream and outputs both an h.264-encoded stream and a raw stream to
-    a shared memory location.
-    """
-    return (
-        # Take in stream from webcam
-        'v4l2src ! video/x-raw, width=640,height=480 ! '
-        # Copy the stream to two different outputs
-        'tee name=t ! queue ! '
-        # Encode one output to h.264
-        'omxh264enc ! h264parse ! '
-        # Convert to rtp packets
-        'rtph264pay pt=96 config-interval=5 ! '
-        # Stream over udp
-        'udpsink host={host} port={port} '
-        # Use other output
-        't. ! queue ! '
-        # Put output in a shared memory location
-        'shmsink name={sink_name} socket-path={socket_path} '
-        'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(host=host, port=port,
-             socket_path=SOCKET_PATH, sink_name=SINK_NAME)
+    It extends str and overides the `__add__` and `__radd__` methods, so
+    you can add them together as you would strings. For example:
 
-def webcam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT):
+    >>> PipelinePart('videotestsrc') + PipelinePart('autovideosink')
+    'videotestsrc ! autovideosink'
     """
-    Creates the Gstreamer pipeline that takes in the vision webcam
-    stream and outputs both an h.264-encoded stream and a raw stream to
-    a shared memory location.
-    """
-    return Gst.parse_launch(webcam_streaming_command(host, port))
 
-def raspicam_streaming_command(host=STREAM_HOST, port=STREAM_PORT,
-                               iso=ISO, shutter=SHUTTER_SPEED):
-    """
-    Creates the Gstreamer pipeline that takes in the Raspberry pi camera
-    stream and outputs both an h.264-encoded stream and a raw stream to
-    a shared memory location.
-    """
-    return (
-        # Take in stream from wraspberry pi camera
-        'rpicamsrc preview=false exposure-mode=0 '
-        'iso={iso} shutter-speed={shutter} ! '
-        'video/x-raw, format=I420, width=640, height=320, framerate=15/1 ! '
-        # Copy the stream to two different outputs
-        'tee name=t ! queue ! '
-        # Encode one output to h.264
-        'omxh264enc ! h264parse ! '
-        # Convert to rtp packets
-        'rtph264pay pt=96 config-interval=5 ! '
-        # Stream over udp
-        'udpsink host={host} port={port} '
-        # Use other output
-        't. ! queue ! '
-        # Put output in a shared memory location
-        'shmsink name={sink_name} socket-path={socket_path} '
-        'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(host=host, port=port, socket_path=SOCKET_PATH,
-        sink_name=SINK_NAME, iso=iso, shutter=shutter)
+    def __add__(self, part):
+        return str(self) + ' ! ' + str(part)
 
-def raspicam_streaming_pipeline(host=STREAM_HOST, port=STREAM_PORT,
-                                iso=ISO, shutter=SHUTTER_SPEED):
-    """
-    Creates the Gstreamer pipeline that takes in the Raspberry Pi camera
-    stream and outputs both an h.264-encoded stream and a raw stream to
-    a shared memory location.
-    """
-    return Gst.parse_launch(
-        raspicam_streaming_command(host, port, iso, shutter))
+    def __radd__(self, part):
+        return str(part) + ' ! ' + str(self)
 
-def raspicam_streaming_process(host=STREAM_HOST, port=STREAM_PORT,
-                               iso=ISO, shutter=SHUTTER_SPEED):
+class Webcam(PipelinePart):
     """
-    Creates a subprocess to stream the raspberry pi camera, outputting
-    the same streams as the webcam.
-    """
-    command = (
-        raspicam_command(iso, shutter) + GSTREAMER_LAUNCH_COMMAND +
-        'rpicamsrc'
-        # Get stream from raspivid process
-        'fdsrc ! h264parse ! '
-        # Copy the stream to two different outputs
-        'tee name=t ! queue ! '
-        # Convert to rtp packets
-        'rtph264pay pt=96 config-interval=5 ! '
-        # Stream over udp
-        'udpsink host={host} port={port} '
-        # Use other output
-        't. ! queue ! '
-        # Decode h.264
-        'omxh264dec ! '
-        # Put output in a shared memory location
-        'shmsink name={sink_name} socket-path={socket_path} '
-        'sync=true wait-for-connection=false shm-size=10000000'
-    ).format(host=host, port=port,
-             socket_path=SOCKET_PATH, sink_name=SINK_NAME)
+    A GStreamer pipline part that takes in video from a webcam that
+    supports v4l2 and outputs raw video.
 
-    return Popen(command, shell=True, stdout=PIPE)
-
-def get_caps_from_process_and_wait(proc):
+    The optional keyword arguments taken are as follows: width, height,
+    framerate
     """
-    Gets the capture filters from the given process and waits for the
-    pipeline to play
-    """
-    caps = None
-    while True:
-        line = proc.stdout.readline().decode('utf-8').strip()
-        # Messages about caps will contain pipeline0 since that is the name of
-        # the pipeline. To be less verbose, these messages are not printed.
-        if 'pipeline0' not in line:
-            print(line)
-        if line == '':
-            # This happens when the process is done printing out stuff. The
-            # program returns here as to not enter an infinite loop
-            return
-        if line.strip() == 'Setting pipeline to PLAYING ...':
-            return caps
+    def __new__(cls, **kwargs):
+        return super().__new__(cls, (
+            'v4l2src name={src_name}! video/x-raw,width={width},'
+            'height={height},framerate={framerate}/1'
+        ).format(**merge_defaults(kwargs)))
 
-        try:
-            find_str = SINK_NAME + '.GstPad:sink: caps = '
-            raw_caps = (line[line.index(find_str)+len(find_str):]
-                        .strip('"') # Remove surrounding quotes if any
-                        .replace('\\', '')) # Remove backslashes that occor on
-                                            # linux environments
-            caps = re.sub(r'=\(.*?\)', '=', raw_caps)
-        except ValueError:
-            pass
-
-def webcam_loopback_command(caps):
+class RaspiCam(PipelinePart):
     """
-    Creates the command used by opencv to parse the raw video from the
+    A GStreamer pipeline part that takes in video from a Raspberry Pi
+    Camera Module and outputs raw video.
+
+    The optional keyword arguments are as follows: iso, shutter, ab, ar,
+    width, height, framerate
+    """
+    def __new__(cls, **kwargs):
+        kw = merge_defaults(kwargs)
+        if kw['awb']:
+            awb_str = ''
+        else:
+            awb_str = 'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} '
+        return super().__new__(cls, (
+            'rpicamsrc name={src_name} preview=false '
+            + awb_str +
+            'exposure-mode={expmode} iso={iso} shutter-speed={shutter} ! '
+            'video/x-raw, format=I420, width={width}, height={height}, '
+            'framerate={framerate}/1'
+        ).format(**kw))
+
+class H264Stream(PipelinePart):
+    """
+    A GStreamer pipeline part that takes in raw video, encodes it to
+    h.264, and streams it over RTP over UDP to a given host and port.
+
+    The optional keyword arguments are as follows: host, port
+    """
+    def __new__(cls, **kwargs):
+        return super().__new__(cls, (
+            # Encode to h.264
+            'omxh264enc ! h264parse ! '
+            # Convert to rtp packets
+            'rtph264pay pt=96 config-interval=5 ! '
+            # Stream over udp
+            'udpsink name={udp_name} host={host} port={port}'
+        ).format(**merge_defaults(kwargs)))
+
+class SHMSink(PipelinePart):
+    """
+    A GStreamer pipeline part that takes in raw video and dumps it to a
+    shared memory location.
+    """
+    def __new__(cls, **kwargs):
+        return super().__new__(cls, (
+            'shmsink name={sink_name} socket-path={socket_path} '
+            'sync=true wait-for-connection=false shm-size=10000000'
+        ).format(**merge_defaults(kwargs)))
+
+class Tee(PipelinePart):
+    """
+    A Gstreamer pipeline part that takes in data, splits it into
+    multiple pads, and assigns each pad to the given pipeline parts so
+    that they can run concurrently.
+
+    The example below will launch two windows for the stream
+
+    >>> (PipelinePart('videotestsrc') + Tee('t',
+    ... PipelinePart('autovideosink'), PipelinePart('autovideosink')))
+    """
+    def __new__(cls, name, *parts):
+        return super().__new__(cls, (
+            'tee name={} ! queue ! '.format(name) +
+            ' {}. ! queue ! '.format(name).join(parts)
+        ))
+
+class SHMSrc(PipelinePart):
+    """
+    A GStreamer pipeline used by OpenCV to parse the raw video from the
     shared memory location, given capture filters.
 
     These capture filters are needed as opencv needs to know how to
     parse what is at the memory location (e.g. width and height).
     """
-    return (
-        'shmsrc socket-path={socket_path} ! '
-        '{caps} ! videoconvert ! appsink'
-    ).format(socket_path=SOCKET_PATH, caps=caps)
+    def __new__(cls, caps, **kwargs):
+        return super().__new__(cls, (
+            'shmsrc socket-path={socket_path} ! '
+            '{caps} ! videoconvert ! appsink'
+        ).format(**dict(merge_defaults(kwargs), caps=caps)))
+
+class Valve(PipelinePart):
+    """
+    Represents a valve element for GStreamer.
+
+    This class takes two parameters: a required name for the valve and
+    the initial state of the drop property (whether to drop buffers and
+    events), which defaults to False.
+    """
+    def __new__(cls, name, drop=False):
+        return super().__new__(cls, (
+            'valve name={} drop={}'
+        )).format(name, 'true' if drop else 'false')
+
+def pipeline(part):
+    """Return a GStreamer pipeline given a PipelinePart."""
+    return Gst.parse_launch(part)
 
 def get_sink_caps(element):
     """
-    Returns the negotiated capture filters of a given element's sink
+    Return the negotiated capture filters of a given element's sink
     connection (i.e. what is outputted by the element).
 
     Because these capture filters will be negotiated, this method must
@@ -196,9 +188,7 @@ def get_sink_caps(element):
 
 def get_cap_value_by_name(caps, name):
     """
-    For some reason getValue(name) works for every data type except
-    fractions, so a bit more work needs to be done to get a capture
-    filter by its name.
+    Return what caps.get_value(name) does, but also handle fractions.
     """
     try:
         return caps.get_value(name)
@@ -213,9 +203,9 @@ def make_command_line_parsable(caps):
     parenthesis (e.g. width=(int)320). This method returns that string,
     but without the type and parenthesis.
 
-    One could just use regex to find all ocurrences of \(.*?\), but that
-    would run into problems if the enclosed strings contained
-    parenthesis.
+    One could just use regex to find all ocurrences of characters
+    surrounded in paranthesis, but that would run into problems if the
+    enclosed strings contained parenthesis.
     """
 
     struct = caps.get_structure(0)
@@ -228,6 +218,58 @@ def make_command_line_parsable(caps):
         out += ', {0}={1}'.format(cap_name, cap_value)
 
     return out
+
+def print_message(message):
+    """Print a message received from a pipeline bus, formatted to be
+    descriptive.
+
+    Adapted from examples at
+    https://gist.github.com/willpatera/7984486.
+    """
+    if message.type == Gst.MessageType.ERROR:
+        err, debug = message.parse_error()
+        element = message.src.get_name()
+        print('Error received from element {}: {}'.format(element, err))
+        print('Debugging information: {}'.format(debug))
+
+    elif message.type == Gst.MessageType.EOS:
+        print('End-Of-Stream reached.')
+
+    elif message.type == Gst.MessageType.STATE_CHANGED:
+        if isinstance(message.src, Gst.Pipeline):
+            old_state, new_state, _ = message.parse_state_changed()
+            old = old_state.value_nick
+            new = new_state.value_nick
+            print('Pipeline state changed from {} to {}'.format(old, new))
+
+    else:
+        m_type = message.type
+        print('Unexpected message of type {} received.'.format(m_type))
+
+class MessagePrinter(threading.Thread):
+    """Thread that coninously queries the pipeline's bus for messages,
+    printing them to stdout.
+    """
+    MESSAGE_TYPES = (Gst.MessageType.STATE_CHANGED | Gst.MessageType.ERROR |
+                     Gst.MessageType.EOS)
+
+    def __init__(self, pipeline):
+        threading.Thread.__init__(self)
+        self._stop = threading.Event()
+        self.pipeline = pipeline
+
+    def run(self):
+        """Start the thread."""
+        bus = self.pipeline.get_bus()
+        while not self._stop.isSet():
+             # In nanoseconds, so wait 0.1s = 1e5 nanoseconds
+            message = bus.timed_pop_filtered(1e5, self.MESSAGE_TYPES)
+            if message is not None:
+                print_message(message)
+
+    def stop(self):
+        """Stop the thread."""
+        self._stop.set()
 
 if __name__ == '__main__':
     testPipeline = Gst.parse_launch(
