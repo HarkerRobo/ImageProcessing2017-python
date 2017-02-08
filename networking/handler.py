@@ -63,7 +63,7 @@ def create_gst_handler(pipeline, src_name=None, valve_name=None,
             udp.set_property('port', message[m.FIELD_PORT])
 
         if valve_name is not None:
-            pipeline.get_by_name(valve_name).set_propety('drop', False)
+            pipeline.get_by_name(valve_name).set_property('drop', False)
 
     handlers = {
         m.TYPE_ERROR: on_error,
