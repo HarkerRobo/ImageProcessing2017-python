@@ -31,7 +31,8 @@ DEFAULTS = {
     'sink_name': SINK_NAME,
     'src_name': SRC_NAME,
     'udp_name': UDP_NAME,
-    'socket_path': SOCKET_PATH
+    'socket_path': SOCKET_PATH,
+    'h264encoder': 'omxh264encode' # Name of GStreamer element to encode h.264
 }
 
 merge_defaults = lambda k: dict(DEFAULTS, **k)
@@ -74,7 +75,7 @@ class Webcam(PipelinePart):
     """
     def __new__(cls, **kwargs):
         return super().__new__(cls, (
-            'v4l2src name={src_name}! video/x-raw,width={width},'
+            'v4l2src name={src_name} ! video/x-raw,width={width},'
             'height={height},framerate={framerate}/1'
         ).format(**merge_defaults(kwargs)))
 
@@ -100,6 +101,20 @@ class RaspiCam(PipelinePart):
             'framerate={framerate}/1'
         ).format(**kw))
 
+class TestSrc(PipelinePart):
+    """
+    A Gstreamer pipeline part that generates a sample video via
+    GStreamer's videotestsrc and outputs raw video.
+
+    The optional keyword arguments are as follows: width, height,
+    framerate
+    """
+    def __new__(cls, **kwargs):
+        return super().__new__(cls, (
+            'videotestsrc name={src_name} ! video/x-raw,width={width},'
+            'height={height},framerate={framerate}/1'
+        ).format(**merge_defaults(kwargs)))
+
 class H264Stream(PipelinePart):
     """
     A GStreamer pipeline part that takes in raw video, encodes it to
@@ -110,7 +125,7 @@ class H264Stream(PipelinePart):
     def __new__(cls, **kwargs):
         return super().__new__(cls, (
             # Encode to h.264
-            'omxh264enc ! h264parse ! '
+            '{h264encoder} ! h264parse ! '
             # Convert to rtp packets
             'rtph264pay pt=96 config-interval=5 ! '
             # Stream over udp
