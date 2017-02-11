@@ -48,7 +48,10 @@ def order_points(pts):
     final = leftMost + rightMost
     return final
 
-#
+
+
+
+
 # def transform(img):
 #     # object = gearcontours.process_image(cv2.imread("sampleImages/img.png"))
 #     # vcts = []
