@@ -1,0 +1,56 @@
+import cv2
+import numpy as np
+import time
+from . import tapecontours
+import math
+from . import calibrate_camera
+
+CAMERA_MATRIX = np.array([[592.24710402, 0., 309.2252711],
+                          [0., 587.04231392, 249.43817009],
+                          [0., 0., 1.]]).astype('float32')
+
+
+def process(left_img, right_img):
+    # image
+
+    # ret, mtx, dist, rvecs, tvecs
+    left_dict = calibrate_camera.calibrate(
+        r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\sampleImages\chess*')
+    right_dict = calibrate_camera.calibrate(
+        r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\sampleImages\chess*')
+
+    corners_left = None  # corner finding
+    corner_right = None  # corner finding
+
+    # reproj_error, camera_matrix,  distance_coeffs, rvecs, tvecs, obj_points, img_points, img_size
+
+    # cv2.stereoCalibrate(objectPoints=left_dict["objpoints"], imagePoints1=left_dict["img_points"],
+    #                     imagePoints2=right_dict["img_points"],
+    #                     cameraMatrix1=left_dict["camera_matrix"], distCoeffs1=left_dict["distance_coeffs"],
+    #                     cameraMatrix2=right_dict["camera_matrix"],
+    #                     distCoeffs2=right_dict["camera_matrix"], imageSize=left_dict["img_size"])
+
+    reproj_error, camera_matrix_left, dist_coeffs_left, camera_matrix_right, dist_coeffs_right, R, T, E, F = cv2.stereoCalibrate(
+        objectPoints=left_dict["objpoints"], imagePoints1=left_dict["img_points"],
+        imagePoints2=right_dict["img_points"], cameraMatrix1=None, distCoeffs1=None, cameraMatrix2=None,
+        distCoeffs2=None, imageSize=left_dict["img_size"])
+    #     R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(
+    #                         config.camera.left_intrinsics,
+    #                         config.camera.left_distortion,
+    #                         config.camera.right_intrinsics,
+    #                         config.camera.right_distortion,
+    # config.camera.size, R, T, alpha=0)
+    R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(cameraMatrix1=camera_matrix_left, distCoeffs1=dist_coeffs_right,
+                                                      cameraMatrix2=camera_matrix_right, distCoeffs2=dist_coeffs_right,
+                                                      imageSize=left_dict["img_size"], R=R, T=T)
+    left_maps = cv2.initUndistortRectifyMap(camera_matrix_left, dist_coeffs_left, R1, P1, left_dict["img_size"],
+                                            cv2.CV_16SC2)
+    right_maps = cv2.initUndistortRectifyMap(camera_matrix_right, dist_coeffs_right, R2, P2, left_dict["img_size"],
+                                             cv2.CV_16SC2)
+
+
+if __name__ == '__main__':
+    img1 = cv2.imread("sampleImages/img.png")
+    img2 = cv2.imread("sampleImages/img-top.png")
+    cv2.waitKey(0)
+    process(img1, img2)
