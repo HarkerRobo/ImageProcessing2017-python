@@ -17,9 +17,9 @@ def process(left_img, right_img):
 
     # ret, mtx, dist, rvecs, tvecs
     left_dict = calibrate_camera.calibrate(
-        r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\sampleImages\chess*')
+        r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\chess_left*')
     right_dict = calibrate_camera.calibrate(
-        r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\sampleImages\chess*')
+        r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\chess_right*')
 
     corners_left = None  # corner finding
     corner_right = None  # corner finding
@@ -49,12 +49,18 @@ def process(left_img, right_img):
                                             cv2.CV_16SC2)
     right_maps = cv2.initUndistortRectifyMap(camera_matrix_right, dist_coeffs_right, R2, P2, left_dict["img_size"],
                                              cv2.CV_16SC2)
+    #
+    # left_img_remap = cv2.remap(left_img, left_maps[0], left_maps[1], cv2.INTER_LANCZOS4)
+    # right_img_remap = cv2.remap(right_img, right_maps[0], right_maps[1], cv2.INTER_LANCZOS4)
 
-    left_img_remap = cv2.remap(left_img, left_maps[0], left_maps[1], cv2.INTER_LANCZOS4)
-    right_img_remap = cv2.remap(right_img, right_maps[0], right_maps[1], cv2.INTER_LANCZOS4)
+    corners_left = [[(402, 434), (402, 327), (448, 327), (448, 434)], [(242, 421), (242, 324), (290, 324), (290, 421)]]
 
-    corners_left = None  # corner finding
-    corner_right = None  # corner finding
+
+    corners_right = [[(508, 430), (508, 324), (552, 324), (552, 430)], [(342, 427), (342, 326), (384, 326), (384, 427)]]
+    corners_left= np.asarray(corners_left, dtype=np.float32)
+    corners_right= np.asarray(corners_right, dtype=np.float32)
+
+
     reconstructed_points = []
     point_pairs = []
     for point_pair in point_pairs:
@@ -72,7 +78,6 @@ def process(left_img, right_img):
     # z = triangulation_constant / dispartity
 
 if __name__ == '__main__':
-    img1 = cv2.imread("sampleImages/img.png")
-    img2 = cv2.imread("sampleImages/img-top.png")
+
     cv2.waitKey(0)
-    process(img1, img2)
+    process(None, None)

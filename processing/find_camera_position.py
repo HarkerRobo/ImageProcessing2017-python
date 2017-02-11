@@ -157,8 +157,8 @@ def process(img2):
     pos2 = [math.degrees(item) for sublist in vector2.tolist() for item in sublist]
     # print(vector2.tolist())
 
-    # print(pos1)
-    # print(pos2)
+    print(pos1)
+    print(pos2)
     #
     # print(t)
     # print("Done")

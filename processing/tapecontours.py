@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 from .drawing import draw_corners
 
-LOW_GREEN = np.array([60, 100, 20])
+LOW_GREEN = np.array([40, 100, 100])
 UPPER_GREEN = np.array([80, 255, 255])
 
 MAX_AREA_ERROR = 0.6 # If two contours have to be combined to form the second
