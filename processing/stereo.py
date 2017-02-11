@@ -10,6 +10,8 @@ CAMERA_MATRIX = np.array([[592.24710402, 0., 309.2252711],
                           [0., 0., 1.]]).astype('float32')
 
 
+camera_dist = 0
+
 def process(left_img, right_img):
     # image
 
@@ -48,6 +50,26 @@ def process(left_img, right_img):
     right_maps = cv2.initUndistortRectifyMap(camera_matrix_right, dist_coeffs_right, R2, P2, left_dict["img_size"],
                                              cv2.CV_16SC2)
 
+    left_img_remap = cv2.remap(left_img, left_maps[0], left_maps[1], cv2.INTER_LANCZOS4)
+    right_img_remap = cv2.remap(right_img, right_maps[0], right_maps[1], cv2.INTER_LANCZOS4)
+
+    corners_left = None  # corner finding
+    corner_right = None  # corner finding
+    reconstructed_points = []
+    point_pairs = []
+    for point_pair in point_pairs:
+        disparity = point_pair["left"]["x"] - point_pair["right"]["x"]
+        reconstructed_point = (point_pair["left"]["x"], point_pair["left"]["y"], disparity)
+        reconstructed_points.append(reconstructed_point)
+    points_left = None
+    points_right = None
+    mystery = cv2.triangulatePoints(projMatr1=P1, projMatr2=P2, projPoints1=points_left, projPoints2=points_right)
+    # Z = (b * f) / (x1 - x2)
+    # b = distance between lens
+    # distance = (camera_dist_between_lenses*focal length)/(disparity)
+
+
+    # z = triangulation_constant / dispartity
 
 if __name__ == '__main__':
     img1 = cv2.imread("sampleImages/img.png")
