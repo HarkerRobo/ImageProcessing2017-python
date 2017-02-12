@@ -32,7 +32,7 @@ def broadcast(server_socket, clients, message):
         if i is not server_socket:
             try:
                 i.send(message.encode('utf-8'))
-            except BrokenPipeError:
+            except:
                 pass
 
 def AcceptClients(server_socket, clients, on_new_message):
@@ -68,7 +68,7 @@ def AcceptClients(server_socket, clients, on_new_message):
                         print('Unicode error')
                     except ConnectionResetError:
                         pass
-        except OSError:
+        except:
             pass
 
 if __name__ == '__main__':

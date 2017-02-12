@@ -83,7 +83,7 @@ def create_gst_handler(pipeline, src_name=None, valve_name=None,
             msg = m.create_message(m.TYPE_ERROR, {m.FIELD_ERROR: str(e)})
             try:
                 client.send(msg.encode('utf-8'))
-            except BrokenPipeError:
+            except:
                 pass
 
     return handle_message
