@@ -46,27 +46,30 @@ def AcceptClients(server_socket, clients, on_new_message):
     """
     while True:
         # See if there is any activity
-        inputReady, _, _ = select.select(clients, [], [])
-        for x in inputReady:
-            if x == server_socket:
-                # Client has connected to the server
-                client_socket, _ = server_socket.accept() # 2nd arg is address
-                clients.append(client_socket)
-            else:
-                # A client did something
-                try:
-                    data = x.recv(SIZE)
-                    if data:
-                        # Client has sent something
-                        on_new_message(x, data.decode('utf-8'))
-                    else:
-                        # Client has disconnected
-                        x.close()
-                        clients.remove(x)
-                except UnicodeDecodeError:
-                    print('Unicode error')
-                except ConnectionResetError:
-                    pass
+        try:
+            inputReady, _, _ = select.select(clients, [], [])
+            for x in inputReady:
+                if x == server_socket:
+                    # Client has connected to the server
+                    client_socket, _ = server_socket.accept() # 2nd arg is address
+                    clients.append(client_socket)
+                else:
+                    # A client did something
+                    try:
+                        data = x.recv(SIZE)
+                        if data:
+                            # Client has sent something
+                            on_new_message(x, data.decode('utf-8'))
+                        else:
+                            # Client has disconnected
+                            x.close()
+                            clients.remove(x)
+                    except UnicodeDecodeError:
+                        print('Unicode error')
+                    except ConnectionResetError:
+                        pass
+        except OSError:
+            pass
 
 if __name__ == '__main__':
     sock, clis = create_socket_and_client_list()
