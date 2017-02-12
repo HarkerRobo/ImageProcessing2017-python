@@ -32,7 +32,7 @@ DEFAULTS = {
     'src_name': SRC_NAME,
     'udp_name': UDP_NAME,
     'socket_path': SOCKET_PATH,
-    'h264encoder': 'omxh264encode' # Name of GStreamer element to encode h.264
+    'h264encoder': 'omxh264enc' # Name of GStreamer element to encode h.264
 }
 
 merge_defaults = lambda k: dict(DEFAULTS, **k)
