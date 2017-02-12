@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # Set up server
     sock, clis = networking.server.create_socket_and_client_list()
     handler = networking.create_gst_handler(pipeline, None, 'valve',
-                                            gs.SINK_NAME)
+                                            gs.UDP_NAME)
 
     acceptThread = threading.Thread(target=networking.server.AcceptClients,
                                     args=[sock, clis, handler])
