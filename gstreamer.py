@@ -93,11 +93,16 @@ class RaspiCam(PipelinePart):
             awb_str = ''
         else:
             awb_str = 'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} '
+
+        if kw['expmode'] == 0:
+            exp_str = 'exposure-mode={expmode} iso={iso} shutter-speed={shutter}'
+        else:
+            exp_str = ''
         return super().__new__(cls, (
             'rpicamsrc name={src_name} preview=false '
-            + awb_str +
-            'exposure-mode={expmode} iso={iso} shutter-speed={shutter} ! '
-            'video/x-raw, format=I420, width={width}, height={height}, '
+            + awb_str
+            + exp_str +
+            ' ! video/x-raw, format=I420, width={width}, height={height}, '
             'framerate={framerate}/1'
         ).format(**kw))
 
