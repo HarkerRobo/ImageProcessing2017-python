@@ -3,6 +3,7 @@ This file contains utilities for creating gstreamer pipelines for
 streaming camera outputs.
 """
 
+from datetime import datetime
 import os
 import threading
 
@@ -219,6 +220,10 @@ def pipeline(part):
     """Return a GStreamer pipeline given a PipelinePart."""
     print(part)
     return Gst.parse_launch(part)
+
+def ts_filename():
+    """Return a filename for a ts file based on the current time."""
+    return '{:%Y-%m-%d_%H-%M-%S}.ts'.format(datetime.today())
 
 def get_sink_caps(element):
     """

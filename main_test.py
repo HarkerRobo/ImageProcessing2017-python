@@ -31,7 +31,7 @@ if __name__ == '__main__':
         gs.Tee(
             't',
             gs.Valve('valve') + gs.H264Stream(port=5003, host='localhost'),
-            gs.TSFile('video.ts', False)
+            gs.TSFile(gs.ts_filename(), False)
         )
     )
     pipeline.set_state(Gst.State.PLAYING)
