@@ -54,17 +54,19 @@ def AcceptClients(server_socket, clients, on_new_message):
                 clients.append(client_socket)
             else:
                 # A client did something
-                data = x.recv(SIZE)
-                if data:
-                    # Client has sent something
-                    try:
+                try:
+                    data = x.recv(SIZE)
+                    if data:
+                        # Client has sent something
                         on_new_message(x, data.decode('utf-8'))
-                    except UnicodeDecodeError:
-                        print('Unicode error')
-                else:
-                    # Client has disconnected
-                    x.close()
-                    clients.remove(x)
+                    else:
+                        # Client has disconnected
+                        x.close()
+                        clients.remove(x)
+                except UnicodeDecodeError:
+                    print('Unicode error')
+                except ConnectionResetError:
+                    pass
 
 if __name__ == '__main__':
     sock, clis = create_socket_and_client_list()
