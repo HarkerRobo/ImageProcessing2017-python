@@ -11,6 +11,20 @@ import networking
 import networking.messages as m
 Gst = gs.Gst
 
+def randomcorners():
+    """Return an array of randomized corners"""
+    r = lambda x: random.randint(int(x*0.4), int(x*0.6))
+    cx = r(gs.DEFAULTS['width'])
+    cy = r(gs.DEFAULTS['height'])
+
+    w = int(gs.DEFAULTS['width'] * random.random() * 0.2)
+    h = int(gs.DEFAULTS['height'] * random.random() * 0.2)
+
+    crns = [(cx-w, cy-h), (cx+w, cy-h), (cx+w, cy+h), (cx-w, cy+h)]
+    random.shuffle(crns)
+
+    return crns
+
 if __name__ == '__main__':
     pipeline = gs.pipeline(
         gs.TestSrc() + gs.Valve('valve') +
@@ -43,15 +57,8 @@ if __name__ == '__main__':
     print('Streaming... Press Ctrl-C t quit.')
     try:
         while True:
-            r = lambda x: random.randint(int(x*0.4), int(x*0.6))
-            cx = r(gs.DEFAULTS['width'])
-            cy = r(gs.DEFAULTS['height'])
+            crns = [randomcorners(), randomcorners()]
 
-            w = int(gs.DEFAULTS['width'] * random.random() * 0.2)
-            h = int(gs.DEFAULTS['height'] * random.random() * 0.2)
-
-            crns = [(cx-w, cy-h), (cx+w, cy-h), (cx+w, cy+h), (cx-w, cy+h)]
-            random.shuffle(crns)
             message = m.create_message(m.TYPE_RESULTS, {m.FIELD_CORNERS: crns})
             networking.server.broadcast(sock, clis, message)
     except KeyboardInterrupt:
