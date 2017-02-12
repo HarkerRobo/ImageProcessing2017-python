@@ -9,7 +9,7 @@ Gst = gs.Gst
 
 if __name__ == '__main__':
     pipeline = gs.pipeline(
-        gs.RaspiCam(awb=True, expmode=1) + gs.Valve('valve') +
+        gs.RaspiCam(awb=True, expmode=1, width=1296, height=972) + gs.Valve('valve') +
         gs.H264Stream(port=5002) # Default to port 5002
     )
     pipeline.set_state(Gst.State.PLAYING)
@@ -29,12 +29,16 @@ if __name__ == '__main__':
     # Set up server
     sock, clis = networking.server.create_socket_and_client_list()
     handler = networking.create_gst_handler(pipeline, None, 'valve',
-                                            gs.SINK_NAME)
+                                            gs.UDP_NAME)
 
     acceptThread = threading.Thread(target=networking.server.AcceptClients,
                                     args=[sock, clis, handler])
     acceptThread.daemon = True # Makes the thread quit with the current thread
     acceptThread.start()
 
-    input('Streaming... Press enter to quit.')
-    sock.close()
+    try:
+        input('Streaming... Press enter to quit.')
+    except KeyboardInterrupt:
+        pass
+    finally:
+        sock.close()
