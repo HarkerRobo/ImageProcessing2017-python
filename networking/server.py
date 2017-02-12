@@ -30,7 +30,10 @@ def broadcast(server_socket, clients, message):
     """
     for i in clients:
         if i is not server_socket:
-            i.send(message.encode('utf-8'))
+            try:
+                i.send(message.encode('utf-8'))
+            except BrokenPipeError:
+                pass
 
 def AcceptClients(server_socket, clients, on_new_message):
     """
