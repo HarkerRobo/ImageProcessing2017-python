@@ -27,8 +27,12 @@ def randomcorners():
 
 if __name__ == '__main__':
     pipeline = gs.pipeline(
-        gs.TestSrc() + gs.Valve('valve') +
-        gs.H264Stream(h264encoder='x264enc', port=5003, host='localhost')
+        gs.TestSrc() + gs.H264Video(h264encoder='x264enc') +
+        gs.Tee(
+            't',
+            gs.Valve('valve') + gs.H264Stream(port=5003, host='localhost'),
+            gs.TSFile('video.ts', False)
+        )
     )
     pipeline.set_state(Gst.State.PLAYING)
 

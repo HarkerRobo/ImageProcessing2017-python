@@ -17,7 +17,7 @@ if __name__ == '__main__':
     pipeline = gs.pipeline(
         gs.RaspiCam() +
         gs.Tee('t',
-               gs.Valve('valve') + gs.H264Stream(),
+               gs.Valve('valve') + gs.H264Video() + gs.H264Stream(),
                gs.SHMSink())
     )
 

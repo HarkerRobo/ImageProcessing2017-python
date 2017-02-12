@@ -120,17 +120,26 @@ class TestSrc(PipelinePart):
             'height={height},framerate={framerate}/1'
         ).format(**merge_defaults(kwargs)))
 
+class H264Video(PipelinePart):
+    """
+    A GStreamer pipeline part that takes in raw video and encodes it to
+    h.264.
+    """
+    def __new__(cls, **kwargs):
+        return super().__new__(cls, (
+            '{h264encoder}'
+        ).format(**merge_defaults(kwargs)))
+
 class H264Stream(PipelinePart):
     """
-    A GStreamer pipeline part that takes in raw video, encodes it to
-    h.264, and streams it over RTP over UDP to a given host and port.
+    A GStreamer pipeline part that takes in h.264 video and streams it
+    over RTP over UDP to a given host and port.
 
     The optional keyword arguments are as follows: host, port
     """
     def __new__(cls, **kwargs):
         return super().__new__(cls, (
-            # Encode to h.264
-            '{h264encoder} ! h264parse ! '
+            'h264parse ! '
             # Convert to rtp packets
             'rtph264pay pt=96 config-interval=5 ! '
             # Stream over udp
@@ -167,7 +176,7 @@ class Tee(PipelinePart):
 
 class SHMSrc(PipelinePart):
     """
-    A GStreamer pipeline used by OpenCV to parse the raw video from the
+    A GStreamer pipeline part used by OpenCV to parse the raw video from the
     shared memory location, given capture filters.
 
     These capture filters are needed as opencv needs to know how to
@@ -192,8 +201,23 @@ class Valve(PipelinePart):
             'valve name={} drop={}'
         )).format(name, 'true' if drop else 'false')
 
+class TSFile(PipelinePart):
+    """
+    A GStreamer pipeline part that dumps received video data into an ts
+    container.
+
+    This class takes two parameters: a requried filename to dump the
+    video into and an optional boolean of whether to append video to the
+    video file, which defaults to True.
+    """
+    def __new__(cls, location, append=True):
+        return super().__new__(cls, (
+            'mpegtsmux ! filesink location={} append={}'
+        )).format(location, 'true' if append else 'false')
+
 def pipeline(part):
     """Return a GStreamer pipeline given a PipelinePart."""
+    print(part)
     return Gst.parse_launch(part)
 
 def get_sink_caps(element):
