@@ -24,6 +24,8 @@ install:
     - echo $VIRTUAL_ENV/lib
     - ls $VIRTUAL_ENV/lib
     - "ln -s /usr/lib/python3/dist-packages/gi $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)"
+    - echo $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi/_gi*)
+    - echo "$(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)/_gi.so)"
     - cp $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi/_gi*) "$(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)/_gi.so)"
     - "ls $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)"
 
