@@ -21,6 +21,6 @@ addons:
 before_install:
     - export PYTHONPATH=$(readlink -f virtualenv/lib/python*/site-packages)
 
-install: "pip install numpy opencv-python vext.gi --prefix=virtualenv"
+install: "pip3 install numpy opencv-python vext.gi --prefix=virtualenv"
 
 script: python3 -m unittest discover -s tests
