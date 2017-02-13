@@ -19,6 +19,6 @@ addons:
     - gnome-common
     - libgirepository1.0-dev
 
-install: "pip install numpy opencv-python git+https://git.gnome.org/browse/pygobject"
+install: "pip install numpy opencv-python git+https://git.gnome.org/browse/pygobject@pygobject-3-12"
 
 script: python3 -m unittest discover -s tests
