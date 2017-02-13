@@ -20,7 +20,7 @@ addons:
     - python3-gi
 
 before_script:
-    - git clone https://github.com/Itseez/opencv.git
+    - git clone https://github.com/Itseez/opencv.git --depth=1
     - cd opencv
     - mkdir build
     - cd build
