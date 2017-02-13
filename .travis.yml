@@ -7,11 +7,9 @@ branches:
         - master
 
 python:
-    - "3.4_with_system_site_packages"
-    - "3.5_with_system_site_packages"
-    - "3.6_with_system_site_packages"
-    - "3.6-dev_with_system_site_packages"
-    - "3.7-dev_with_system_site_packages"
+    - "3.6"
+    - "3.6-dev"
+    - "3.7-dev"
 
 addons:
   apt:
@@ -20,6 +18,6 @@ addons:
     - gstreamer1.0-plugins-base
     - python3-gi
 
-install: "pip install numpy opencv-python"
+install: "pip install numpy opencv-python git+https://git.gnome.org/browse/pygobject"
 
 script: python3 -m unittest discover -s tests
