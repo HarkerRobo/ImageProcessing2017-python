@@ -34,8 +34,8 @@ before_install:
     - sudo make install
     - cd ../
     - wget https://launchpad.net/ubuntu/+archive/primary/+files/gobject-introspection_1.46.0.orig.tar.xz
-    - tar xf gobject-introspection_1.46.0.tar.xz
-    - cd gobject-introspection_1.46.0
+    - tar xf gobject-introspection_1.46.0.orig.tar.xz
+    - cd gobject-introspection-1.46.0
     - ./configure --prefix=/usr/local --disable-static
     - make -j2
     - sudo make install
