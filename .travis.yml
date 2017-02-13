@@ -19,7 +19,7 @@ addons:
             - python3-gi
 
 before_install:
-    - export PYTHONPATH=$(dirname $(which python))/../
+    - export PYTHONPATH=$(dirname $(which python))/../Lib/site-packages
 
 install: "pip install numpy opencv-python vext.gi"
 
