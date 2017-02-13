@@ -12,33 +12,14 @@ python:
     - "3.7-dev"
 
 addons:
-  apt:
-    packages:
-    - python3-dev
-    - gstreamer1.0-plugins-base
-    - gnome-common
-
-# Yes Ubuntu has a package but the one for trusty is out of date, so we have to build gi from source
-# Instructions for building GObject are from http://www.linuxfromscratch.org/blfs/view/7.10/general/gobject-introspection.html
-
-# It also happens that glib is out of date, so that has be build following the instructions at:
-# http://www.linuxfromscratch.org/blfs/view/7.10/general/glib2.html
-
-before_install:
-    - wget http://ftp.gnome.org/pub/gnome/sources/glib/2.48/glib-2.48.2.tar.xz
-    - tar xf glib-2.48.2.tar.xz
-    - cd glib-2.48.2
-    - ./configure --prefix=/usr/local --with-pcre=system
-    - make -j2
-    - sudo make install
-    - cd ../
-    - wget http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/1.47/gobject-introspection-1.47.92.tar.xz
-    - tar xf gobject-introspection-1.47.92.tar.xz
-    - cd gobject-introspection-1.47.92
-    - ./configure --prefix=/usr/local --disable-static
-    - make -j2
-    - sudo make install
-    - cd ../
+    apt:
+        sources:
+            - sourceline: "deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted universe multiverse"
+        packages:
+            - python3-dev
+            - gstreamer1.0-plugins-base
+            - gnome-common
+            - libgirepository1.0-dev/trusty-backports
 
 install: "pip install numpy opencv-python git+https://git.gnome.org/browse/pygobject@3.22.0"
 
