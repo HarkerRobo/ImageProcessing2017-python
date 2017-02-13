@@ -1,5 +1,5 @@
-# 2017 Image processing code
-[<img src="http://forthebadge.com/images/badges/made-with-python.svg" height="20" />](http://forthebadge.com)
+# ![2017 Image processing code](images/logo.svg)
+[<img src="http://forthebadge.com/images/badges/made-with-python.svg" height="20" alt="Made with Python" />](https://xkcd.com/353/)
 
 This will probably end up being the vision code we use for 2017.
 
