@@ -30,7 +30,10 @@ def broadcast(server_socket, clients, message):
     """
     for i in clients:
         if i is not server_socket:
-            i.send(message.encode('utf-8'))
+            try:
+                i.send(message.encode('utf-8'))
+            except:
+                pass
 
 def AcceptClients(server_socket, clients, on_new_message):
     """
@@ -43,25 +46,30 @@ def AcceptClients(server_socket, clients, on_new_message):
     """
     while True:
         # See if there is any activity
-        inputReady, _, _ = select.select(clients, [], [])
-        for x in inputReady:
-            if x == server_socket:
-                # Client has connected to the server
-                client_socket, _ = server_socket.accept() # 2nd arg is address
-                clients.append(client_socket)
-            else:
-                # A client did something
-                data = x.recv(SIZE)
-                if data:
-                    # Client has sent something
+        try:
+            inputReady, _, _ = select.select(clients, [], [])
+            for x in inputReady:
+                if x == server_socket:
+                    # Client has connected to the server
+                    client_socket, _ = server_socket.accept() # 2nd arg is address
+                    clients.append(client_socket)
+                else:
+                    # A client did something
                     try:
-                        on_new_message(x, data.decode('utf-8'))
+                        data = x.recv(SIZE)
+                        if data:
+                            # Client has sent something
+                            on_new_message(x, data.decode('utf-8'))
+                        else:
+                            # Client has disconnected
+                            x.close()
+                            clients.remove(x)
                     except UnicodeDecodeError:
                         print('Unicode error')
-                else:
-                    # Client has disconnected
-                    x.close()
-                    clients.remove(x)
+                    except ConnectionResetError:
+                        pass
+        except:
+            pass
 
 if __name__ == '__main__':
     sock, clis = create_socket_and_client_list()

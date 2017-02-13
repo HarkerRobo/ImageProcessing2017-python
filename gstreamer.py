@@ -3,6 +3,7 @@ This file contains utilities for creating gstreamer pipelines for
 streaming camera outputs.
 """
 
+from datetime import datetime
 import os
 import threading
 
@@ -31,7 +32,8 @@ DEFAULTS = {
     'sink_name': SINK_NAME,
     'src_name': SRC_NAME,
     'udp_name': UDP_NAME,
-    'socket_path': SOCKET_PATH
+    'socket_path': SOCKET_PATH,
+    'h264encoder': 'omxh264enc' # Name of GStreamer element to encode h.264
 }
 
 merge_defaults = lambda k: dict(DEFAULTS, **k)
@@ -74,7 +76,7 @@ class Webcam(PipelinePart):
     """
     def __new__(cls, **kwargs):
         return super().__new__(cls, (
-            'v4l2src name={src_name}! video/x-raw,width={width},'
+            'v4l2src name={src_name} ! video/x-raw,width={width},'
             'height={height},framerate={framerate}/1'
         ).format(**merge_defaults(kwargs)))
 
@@ -92,25 +94,53 @@ class RaspiCam(PipelinePart):
             awb_str = ''
         else:
             awb_str = 'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} '
+
+        if kw['expmode'] == 0:
+            exp_str = 'exposure-mode={expmode} iso={iso} shutter-speed={shutter}'
+        else:
+            exp_str = ''
         return super().__new__(cls, (
             'rpicamsrc name={src_name} preview=false '
-            + awb_str +
-            'exposure-mode={expmode} iso={iso} shutter-speed={shutter} ! '
-            'video/x-raw, format=I420, width={width}, height={height}, '
+            + awb_str
+            + exp_str +
+            ' ! video/x-raw, format=I420, width={width}, height={height}, '
             'framerate={framerate}/1'
         ).format(**kw))
 
+class TestSrc(PipelinePart):
+    """
+    A Gstreamer pipeline part that generates a sample video via
+    GStreamer's videotestsrc and outputs raw video.
+
+    The optional keyword arguments are as follows: width, height,
+    framerate
+    """
+    def __new__(cls, **kwargs):
+        return super().__new__(cls, (
+            'videotestsrc name={src_name} ! video/x-raw,width={width},'
+            'height={height},framerate={framerate}/1'
+        ).format(**merge_defaults(kwargs)))
+
+class H264Video(PipelinePart):
+    """
+    A GStreamer pipeline part that takes in raw video and encodes it to
+    h.264.
+    """
+    def __new__(cls, **kwargs):
+        return super().__new__(cls, (
+            '{h264encoder}'
+        ).format(**merge_defaults(kwargs)))
+
 class H264Stream(PipelinePart):
     """
-    A GStreamer pipeline part that takes in raw video, encodes it to
-    h.264, and streams it over RTP over UDP to a given host and port.
+    A GStreamer pipeline part that takes in h.264 video and streams it
+    over RTP over UDP to a given host and port.
 
     The optional keyword arguments are as follows: host, port
     """
     def __new__(cls, **kwargs):
         return super().__new__(cls, (
-            # Encode to h.264
-            'omxh264enc ! h264parse ! '
+            'h264parse ! '
             # Convert to rtp packets
             'rtph264pay pt=96 config-interval=5 ! '
             # Stream over udp
@@ -147,7 +177,7 @@ class Tee(PipelinePart):
 
 class SHMSrc(PipelinePart):
     """
-    A GStreamer pipeline used by OpenCV to parse the raw video from the
+    A GStreamer pipeline part used by OpenCV to parse the raw video from the
     shared memory location, given capture filters.
 
     These capture filters are needed as opencv needs to know how to
@@ -172,9 +202,28 @@ class Valve(PipelinePart):
             'valve name={} drop={}'
         )).format(name, 'true' if drop else 'false')
 
+class TSFile(PipelinePart):
+    """
+    A GStreamer pipeline part that dumps received video data into an ts
+    container.
+
+    This class takes two parameters: a requried filename to dump the
+    video into and an optional boolean of whether to append video to the
+    video file, which defaults to True.
+    """
+    def __new__(cls, location, append=True):
+        return super().__new__(cls, (
+            'mpegtsmux ! filesink location={} append={}'
+        )).format(location, 'true' if append else 'false')
+
 def pipeline(part):
     """Return a GStreamer pipeline given a PipelinePart."""
+    print(part)
     return Gst.parse_launch(part)
+
+def ts_filename():
+    """Return a filename for a ts file based on the current time."""
+    return '{:%Y-%m-%d_%H-%M-%S}.ts'.format(datetime.today())
 
 def get_sink_caps(element):
     """

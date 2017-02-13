@@ -63,7 +63,7 @@ def create_gst_handler(pipeline, src_name=None, valve_name=None,
             udp.set_property('port', message[m.FIELD_PORT])
 
         if valve_name is not None:
-            pipeline.get_by_name(valve_name).set_propety('drop', False)
+            pipeline.get_by_name(valve_name).set_property('drop', False)
 
     handlers = {
         m.TYPE_ERROR: on_error,
@@ -76,12 +76,14 @@ def create_gst_handler(pipeline, src_name=None, valve_name=None,
 
         This function will be returned by surrounding function.
         """
-        print(message_str)
         try:
             message = m.parse_message(message_str)
             handlers[message[m.FIELD_TYPE]](message)
         except ValueError as e:
             msg = m.create_message(m.TYPE_ERROR, {m.FIELD_ERROR: str(e)})
-            client.send(msg.encode('utf-8'))
+            try:
+                client.send(msg.encode('utf-8'))
+            except:
+                pass
 
     return handle_message
