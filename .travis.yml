@@ -24,6 +24,6 @@ install:
     - export pythondir=$(dirname $(dirname $(which python3)))
     - ls $pythondir/lib
     - "ln -s /usr/lib/python3/dist-packages/gi $(readlink -f $pythondir/lib/python*/site-packages)"
-    - "ls $(readlink -f $pythondir/lib/python*/site-packages)"
+    - "ls $(readlink -f $pythondir/lib/python*/site-packages/gi)"
 
 script: python3 -m unittest discover -s tests
