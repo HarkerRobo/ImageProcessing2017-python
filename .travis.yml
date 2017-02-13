@@ -19,22 +19,22 @@ addons:
     - gnome-common
 
 # Yes Ubuntu has a package but the one for trusty is out of date, so we have to build gi from source
-# Instructions for building GObject are from http://www.linuxfromscratch.org/blfs/view/7.9/general/gobject-introspection.html
+# Instructions for building GObject are from http://www.linuxfromscratch.org/blfs/view/7.910/general/gobject-introspection.html
 
 # It also happens that glib is out of date, so that has be build following the instructions at:
-# http://www.linuxfromscratch.org/blfs/view/7.9/general/glib2.html
+# http://www.linuxfromscratch.org/blfs/view/7.10/general/glib2.html
 
 before_install:
-    - wget http://ftp.gnome.org/pub/gnome/sources/glib/2.46/glib-2.46.2.tar.xz
-    - tar xf glib-2.46.2.tar.xz
-    - cd glib-2.46.2
+    - wget http://ftp.gnome.org/pub/gnome/sources/glib/2.48/glib-2.48.2.tar.xz
+    - tar xf glib-2.48.2.tar.xz
+    - cd glib-2.48.2
     - ./configure --prefix=/usr/local --with-pcre=system
     - make -j2
     - sudo make install
     - cd ../
-    - wget http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/1.46/gobject-introspection-1.46.0.tar.xz
-    - tar xf gobject-introspection-1.46.0.tar.xz
-    - cd gobject-introspection-1.46.0
+    - wget http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/1.48/gobject-introspection-1.48.0.tar.xz
+    - tar xf gobject-introspection-1.48.0.tar.xz
+    - cd gobject-introspection-1.48.0
     - ./configure --prefix=/usr/local --disable-static
     - make -j2
     - sudo make install
