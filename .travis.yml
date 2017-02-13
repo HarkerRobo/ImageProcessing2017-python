@@ -1,6 +1,6 @@
 language: python
 dist: trusty
-sudo: false
+sudo: required
 
 branches:
     only:
@@ -24,9 +24,9 @@ before_script:
     - cd opencv
     - mkdir build
     - cd build
-    - cmake ..
+    - cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local ..
     - make -j4
-    - make -j4 install
+    - sudo make -j4 install
     - cd ../..
 
 script: python3 -m unittest discover -s tests
