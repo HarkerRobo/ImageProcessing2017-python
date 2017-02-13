@@ -17,7 +17,13 @@ addons:
     - python3-dev
     - gstreamer1.0-plugins-base
     - gnome-common
-    - libgirepository1.0-dev
+
+before_install:
+    - git clone git://git.gnome.org/gobject-introspection
+    - cd gobject-introspection
+    - ./configure --prefix=/usr --disable-static
+    - sudo make install
+    - cd ../
 
 install: "pip install numpy opencv-python git+https://git.gnome.org/browse/pygobject@3.22.0"
 
