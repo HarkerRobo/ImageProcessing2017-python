@@ -1,4 +1,4 @@
-# ![2017 Image processing code](https://cdn.rawgit.com/HarkerRobo/ImageProcessing2017-python/master/images/logo.svg)
+# ![2017 Image processing code](https://rawgit.com/HarkerRobo/ImageProcessing2017-python/master/images/logo.svg)
 [<img src="http://forthebadge.com/images/badges/made-with-python.svg" height="20" alt="Made with Python" />](https://xkcd.com/353/)
 
 This is the vision code we will use for 2017.
