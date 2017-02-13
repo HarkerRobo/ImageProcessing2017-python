@@ -16,7 +16,7 @@ addons:
     apt:
         packages:
             - python3-dev
-            - gstreamer1.0-plugins-base
+            - gstreamer1.0*
             - python3-gi
 
 install:
