@@ -24,6 +24,7 @@ install:
     - pwd
     - "ls /usr/lib/python3/dist-packages/gi"
     - "ls ~/virtualenv/python*/*"
+    - "which python3"
     - "ln -s /usr/lib/python3/dist-packages/gi $(readlink -f virtualenv/lib/python*/site-packages)"
     - "ls $(readlink -f virtualenv/lib/python*/site-packages)"
 
