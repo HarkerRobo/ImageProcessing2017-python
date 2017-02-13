@@ -22,6 +22,7 @@ addons:
 install:
     - "pip3 install numpy opencv-python"
     - "ls /usr/lib/python3/dist-packages/gi"
-    - "ln -s /usr/lib/python3/dist-packages/gi $(readlink -f virtualenv/lib/python*/site-packages)"
+    - "ln -s /usr/lib/python3/dist-packages/gi $(readlink -f virtualenv/lib/python*/site-packages)/"
+    - "ls $(readlink -f virtualenv/lib/python*/site-packages)/"
 
 script: python3 -m unittest discover -s tests
