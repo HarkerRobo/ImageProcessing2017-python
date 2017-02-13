@@ -24,7 +24,7 @@ install:
     - echo $VIRTUAL_ENV/lib
     - ls $VIRTUAL_ENV/lib
     - "ln -s /usr/lib/python3/dist-packages/gi $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)"
-    - sudo cp $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi/_gi*) "$(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)/_gi.so)"
+    - sudo cp $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi/_gi*) "$(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)/_gi.so"
     - "ls $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)"
 
 script: python3 -m unittest discover -s tests
