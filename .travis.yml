@@ -29,13 +29,14 @@ before_install:
     - tar xf glib-2.46.2.tar.xz
     - cd glib-2.46.2
     - ./configure --prefix=/usr --with-pcre=system
-    - make
+    - make -j2
     - sudo make install
     - cd ../
     - wget http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/1.46/gobject-introspection-1.46.0.tar.xz
     - tar xf gobject-introspection-1.46.0.tar.xz
     - cd gobject-introspection-1.46.0
     - ./configure --prefix=/usr --disable-static
+    - make -j2
     - sudo make install
     - cd ../
 
