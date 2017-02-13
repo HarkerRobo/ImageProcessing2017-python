@@ -22,8 +22,8 @@ addons:
 # Instructions for building GObject are from http://www.linuxfromscratch.org/blfs/view/7.10/general/gobject-introspection.html
 before_install:
     - wget http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/1.46/gobject-introspection-1.46.0.tar.xz
-    - tar xvf gobject-introspection-1.46.0.tar.xz
-    - cd gobject-introspection-1.48.0
+    - tar xf gobject-introspection-1.46.0.tar.xz
+    - cd gobject-introspection-1.46.0
     - ./configure --prefix=/usr --disable-static
     - sudo make install
     - cd ../
