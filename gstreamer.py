@@ -218,7 +218,6 @@ class TSFile(PipelinePart):
 
 def pipeline(part):
     """Return a GStreamer pipeline given a PipelinePart."""
-    print(part)
     return Gst.parse_launch(part)
 
 def ts_filename():
