@@ -184,7 +184,7 @@ def large_tape_piece(contours, tape_cnt=None, tape_area=None, debug_img=None):
     """
     rest = [c for c in contours]
 
-    for c in contours:
+    for c in contours[:10]:
         if tape_cnt is not None and tape_area is not None:
             err1 = abs(cv2.contourArea(c) - tape_area) / tape_area
             err2 = (abs(cv2.boundingRect(c)[3] - cv2.boundingRect(tape_cnt)[3])

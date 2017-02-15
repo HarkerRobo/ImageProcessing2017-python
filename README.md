@@ -1,7 +1,9 @@
-# 2017 Image processing code
-[<img src="http://forthebadge.com/images/badges/made-with-python.svg" height="20" />](http://forthebadge.com)
+# ![2017 Image processing code](https://rawgit.com/HarkerRobo/ImageProcessing2017-python/master/images/logo.svg)
 
-This will probably end up being the vision code we use for 2017.
+[<img src="http://forthebadge.com/images/badges/made-with-python.svg" height="20" alt="Made with Python" />](https://xkcd.com/353/)
+[![Travis](https://img.shields.io/travis/HarkerRobo/ImageProcessing2017-python.svg?style=flat-square)](https://travis-ci.org/HarkerRobo/ImageProcessing2017-python)
+
+This is the vision code we will use for 2017.
 
 So you can understand it better, below is a flow chart of the general process:
 
