@@ -15,7 +15,7 @@ case "$1" in
   start)
     echo "Starting script streaming "
     # Run files here
-    python3 /home/pi/ImageProcessing2017-python/main.py 2>&1 > /var/log/streaming1.log &
+    python3 /home/pi/ImageProcessing2017-python/main.py &> /var/log/streaming1.log &
     ;;
   stop)
     echo "Stopping script streaming"
