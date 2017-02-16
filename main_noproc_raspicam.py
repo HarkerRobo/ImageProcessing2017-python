@@ -3,6 +3,7 @@ This program serves a stream of the camera with autofocus turned off.
 """
 
 import threading
+import time
 import gstreamer as gs
 import networking
 Gst = gs.Gst
