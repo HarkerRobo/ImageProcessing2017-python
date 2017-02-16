@@ -21,7 +21,7 @@ DEFAULTS = {
     'height': 480,
     'bitrate': 2000000, # 2 Mbps (after h.264 encoding)
     'framerate': 15,
-    'host': '192.168.1.123',
+    'host': '127.0.0.1',
     'port': 5001,
     'iso': 100,
     'shutter': 2000,
