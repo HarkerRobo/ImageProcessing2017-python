@@ -58,7 +58,7 @@ if __name__ == '__main__':
     acceptThread.daemon = True # Makes the thread quit with the current thread
     acceptThread.start()
 
-    print('Streaming... Press Ctrl-C t quit.')
+    print('Streaming... Press Ctrl-C to quit.')
     try:
         while True:
             crns = [randomcorners(), randomcorners()]

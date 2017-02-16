@@ -3,6 +3,7 @@ This program serves a stream of the camera with autofocus turned off.
 """
 
 import threading
+import time
 import gstreamer as gs
 import networking
 Gst = gs.Gst
@@ -36,8 +37,10 @@ if __name__ == '__main__':
     acceptThread.daemon = True # Makes the thread quit with the current thread
     acceptThread.start()
 
+    print('Streaming... Press Ctrl-C to quit.')
     try:
-        input('Streaming... Press enter to quit.')
+        while True:
+            time.sleep(0.1)
     except KeyboardInterrupt:
         pass
     finally:

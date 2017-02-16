@@ -36,8 +36,10 @@ if __name__ == '__main__':
     acceptThread.daemon = True # Makes the thread quit with the current thread
     acceptThread.start()
 
+    print('Streaming... Press Ctrl-C to quit.')
     try:
-        input('Streaming... Press enter to quit.')
+        while True:
+            time.sleep(0.1)
     except KeyboardInterrupt:
         pass
     finally:
