@@ -47,6 +47,8 @@ class GstUtilitiesTest(unittest.TestCase):
         p = gs.pipeline('videotestsrc ! {} ! fakesink name=sink'.format(caps))
         p.set_state(gs.Gst.State.PLAYING)
 
+        p.get_state(gs.Gst.CLOCK_TIME_NONE)
+
         real_caps_obj = gs.get_sink_caps(p.get_by_name('sink'))
         real_caps = gs.make_command_line_parsable(real_caps_obj)
 
