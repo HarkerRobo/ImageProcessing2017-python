@@ -5,6 +5,7 @@
 # Then do:
 # $ chmod 755 /etc/init.d/streaming
 # $ update-rc.d streaming defaults
+# You may also have to make the logs writable by non-root users.
 
 # Some things that run always
 touch /var/lock/streaming
@@ -14,7 +15,7 @@ case "$1" in
   start)
     echo "Starting script streaming "
     # Run files here
-    python3 /home/pi/ImageProcessing2017-python/main.py 2>&1 > /var/log/streaming1.log
+    python3 /home/pi/ImageProcessing2017-python/main.py 2>&1 > /var/log/streaming1.log &
     ;;
   stop)
     echo "Stopping script streaming"
