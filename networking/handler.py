@@ -47,11 +47,13 @@ def create_gst_handler(pipeline, src_name=None, valve_name=None,
 
     def on_stop(_):
         """Handle a message to stop the GStreamer pipeline."""
+        print('Stopping video stream')
         if valve_name is not None:
             pipeline.get_by_name(valve_name).set_property('drop', True)
 
     def on_start(message):
         """Handle a message to start the GStreamer pipeline."""
+        print('Starting video stream')
         if src_name is not None:
             src = pipeline.get_by_name(src_name)
             src.set_property('iso', message[m.FIELD_ISO])
