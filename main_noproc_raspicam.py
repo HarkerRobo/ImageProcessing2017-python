@@ -4,13 +4,16 @@ This program serves a stream of the camera with autofocus turned off.
 
 import threading
 import time
+import config
 import gstreamer as gs
 import networking
 Gst = gs.Gst
 
 if __name__ == '__main__':
+    conf = config.configfor('Driver')
+
     pipeline = gs.pipeline(
-        gs.RaspiCam(awb=True, expmode=1, width=1296, height=972) + gs.Valve('valve') +
+        gs.RaspiCam(**conf.params) + gs.Valve('valve') +
         gs.H264Video() + gs.H264Stream(port=5002) # Default to port 5002
     )
     pipeline.set_state(Gst.State.PLAYING)
@@ -28,7 +31,7 @@ if __name__ == '__main__':
     debuggingThread.stop()
 
     # Set up server
-    sock, clis = networking.server.create_socket_and_client_list(port=6000)
+    sock, clis = networking.server.create_socket_and_client_list(conf.controlport)
     handler = networking.create_gst_handler(pipeline, None, 'valve',
                                             gs.UDP_NAME)
 
