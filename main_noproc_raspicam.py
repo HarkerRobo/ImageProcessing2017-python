@@ -13,8 +13,8 @@ if __name__ == '__main__':
     conf = config.configfor('Driver')
 
     pipeline = gs.pipeline(
-        gs.RaspiCam(**conf.params) + gs.Valve('valve') +
-        gs.H264Video() + gs.H264Stream(port=5002) # Default to port 5002
+        gs.H264RaspiCam(**conf.params) + gs.Valve('valve') +
+        gs.H264Stream(port=5002) # Default to port 5002
     )
     pipeline.set_state(Gst.State.PLAYING)
 

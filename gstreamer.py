@@ -107,6 +107,38 @@ class RaspiCam(PipelinePart):
             'framerate={framerate}/1'
         ).format(**kw))
 
+class H264RaspiCam(PipelinePart):
+    """
+    A GStreamer pipeline part that takes in video from a Raspberry Pi
+    Camera Module and outputs h264 video.
+
+    The optional keyword arguments are as follows: iso, shutter, ab, ar,
+    width, height, framerate
+
+    Note that there are some issues using this with lower exposure
+    modes. Proceed with caution. However, this does allow for setting a
+    constant bitrate.
+    """
+    def __new__(cls, **kwargs):
+        kw = merge_defaults(kwargs)
+        if kw['awb']:
+            awb_str = ''
+        else:
+            awb_str = 'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} '
+
+        if kw['expmode'] == 0:
+            exp_str = 'exposure-mode={expmode} iso={iso} shutter-speed={shutter}'
+        else:
+            exp_str = ''
+        return super().__new__(cls, (
+            'rpicamsrc name={src_name} preview=false '
+            + awb_str
+            + exp_str +
+            ' ! video/x-h264, width={width}, height={height}, profile=high, '
+            'framerate={framerate}/1'
+        ).format(**kw))
+
+
 class TestSrc(PipelinePart):
     """
     A Gstreamer pipeline part that generates a sample video via
