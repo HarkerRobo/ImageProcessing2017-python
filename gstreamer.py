@@ -28,7 +28,7 @@ DEFAULTS = {
     'awb': False, # Auto white balance
     'ab': 2.5, # Blue component of white balance
     'ar': 1, # Red component of white balance
-    'expmode': 0, # 0 for manual, 1 for auto
+    'expmode': 6, # 0 for manual, 1 for auto, 6 for sports
     'sink_name': SINK_NAME,
     'src_name': SRC_NAME,
     'udp_name': UDP_NAME,
@@ -98,7 +98,7 @@ class RaspiCam(PipelinePart):
         if kw['expmode'] == 0:
             exp_str = 'exposure-mode={expmode} iso={iso} shutter-speed={shutter}'
         else:
-            exp_str = ''
+            exp_str = 'exposure-mode={expmode}'
         return super().__new__(cls, (
             'rpicamsrc name={src_name} preview=false '
             + awb_str
@@ -129,7 +129,7 @@ class H264RaspiCam(PipelinePart):
         if kw['expmode'] == 0:
             exp_str = 'exposure-mode={expmode} iso={iso} shutter-speed={shutter}'
         else:
-            exp_str = ''
+            exp_str = 'exposure-mode={expmode}'
         return super().__new__(cls, (
             'rpicamsrc name={src_name} preview=false '
             + awb_str
