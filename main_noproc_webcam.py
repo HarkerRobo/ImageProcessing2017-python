@@ -31,7 +31,7 @@ if __name__ == '__main__':
     debuggingThread.stop()
 
     # Set up server
-    sock, clis = networking.server.create_socket_and_client_list(conf.controlport)
+    sock, clis = networking.server.create_socket_and_client_list(port=conf.controlport)
     handler = networking.create_gst_handler(pipeline, None, 'valve',
                                             gs.UDP_NAME)
 
