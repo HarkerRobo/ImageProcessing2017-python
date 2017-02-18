@@ -19,7 +19,7 @@ GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v -e '
 DEFAULTS = {
     'width': 640,
     'height': 480,
-    'bitrate': 2000000, # 2 Mbps (after h.264 encoding)
+    'bitrate': 1000000, # 1 Mbps (after h.264 encoding)
     'framerate': 15,
     'host': '127.0.0.1',
     'port': 5001,
