@@ -18,7 +18,7 @@ right_dict = calibrate_camera.calibrate(
     r'processing/chess_right*', r"processing/calibration.pickle.right")
 
 reproj_error, camera_matrix_left, dist_coeffs_left, camera_matrix_right, dist_coeffs_right, R, T, E, F = cv2.stereoCalibrate(
-    objectPoints=left_dict["objpoints"], imagePoints1=left_dict["img_points"],
+    objectPoints=left_dict["obj_points"], imagePoints1=left_dict["img_points"],
     imagePoints2=right_dict["img_points"], cameraMatrix1=None, distCoeffs1=None, cameraMatrix2=None,
     distCoeffs2=None, imageSize=left_dict["img_size"])
 
