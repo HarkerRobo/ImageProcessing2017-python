@@ -3,7 +3,7 @@ import cv2
 import glob
 import pickle
 
-CALIBRATION_FILE = 'calibration.pickle'
+CALIBRATION_FILE = 'calibration.pickle.right'
 
 def calibrate(image_paths):
     try:
@@ -13,8 +13,8 @@ def calibrate(image_paths):
         # termination criteria
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-        pointsY = 7
-        pointsX = 6
+        pointsY = 6
+        pointsX = 5
         objp = np.zeros((pointsX * pointsY, 3), np.float32)
         objp[:, :2] = np.mgrid[0:pointsY, 0:pointsX].T.reshape(-1, 2)
 
@@ -55,4 +55,4 @@ def calibrate(image_paths):
 
 
 if __name__ == '__main__':
-    calibrate(r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\sampleImages\chess*')
+    calibrate(r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\chess_right*')
