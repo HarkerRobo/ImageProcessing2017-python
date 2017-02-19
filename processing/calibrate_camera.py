@@ -4,10 +4,10 @@ import glob
 import pickle
 
 def calibrate(image_paths, calibration_file):
-    # try:
-    #     with open(calibration_file, 'rb') as f:
-    #         return pickle.load(f)
-    # except:
+    try:
+        with open(calibration_file, 'rb') as f:
+            return pickle.load(f)
+    except:
         # termination criteria
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
