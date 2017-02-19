@@ -31,6 +31,9 @@ def calibrate(image_paths):
             objpoints.append(objp)
             corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
             imgpoints.append(corners2)
+
+    print(imgpoints)
+    print(objpoints)
     reproj_error, camera_matrix, distance_coeffs, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints,
                                                                                      gray.shape[::-1], None, None)
     dict = {"reproj_error": reproj_error, "camera_matrix": camera_matrix, "distance_coeffs": distance_coeffs,
