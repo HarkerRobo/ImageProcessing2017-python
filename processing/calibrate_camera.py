@@ -27,6 +27,7 @@ def calibrate(image_paths):
         ret, corners = cv2.findChessboardCorners(gray, (pointsY, pointsX), None)
 
         # If found, add object points, image points
+        print(ret)
         if ret == True:
             objpoints.append(objp)
             corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
