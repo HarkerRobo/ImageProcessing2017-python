@@ -17,9 +17,9 @@ def process(left_img, right_img):
 
     # ret, mtx, dist, rvecs, tvecs
     left_dict = calibrate_camera.calibrate(
-        r'chess_left*')
+        r'processing/chess_left*')
     right_dict = calibrate_camera.calibrate(
-        r'chess_right*')
+        r'processing/chess_right*')
 
     corners_left = np.concatenate(tapecontours.get_corners_from_image(left_img))
     corners_right = np.concatenate(tapecontours.get_corners_from_image(right_img))
