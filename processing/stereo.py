@@ -31,7 +31,11 @@ def process(left_img, right_img):
 
     corners_left = np.concatenate(tapecontours.get_corners_from_image(left_img))
     corners_right = np.concatenate(tapecontours.get_corners_from_image(right_img))
-
+    if len(corners_left) != 8 or len(corners_right) != 8:
+        print(corners_left)
+        print(corners_right)
+        print("did not werk")
+        return
 
     # reproj_error, camera_matrix,  distance_coeffs, rvecs, tvecs, obj_points, img_points, img_size
 
