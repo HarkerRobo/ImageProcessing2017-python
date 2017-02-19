@@ -3,11 +3,9 @@ import cv2
 import glob
 import pickle
 
-CALIBRATION_FILE = 'calibration.pickle.right'
-
-def calibrate(image_paths):
+def calibrate(image_paths, calibration_file):
     try:
-        with open(CALIBRATION_FILE, 'rb') as f:
+        with open(calibration_file, 'rb') as f:
             return pickle.load(f)
     except:
         # termination criteria
@@ -48,11 +46,11 @@ def calibrate(image_paths):
                 "rvecs": rvecs, "tvecs": tvecs, "obj_points": objpoints, "img_points": imgpoints,
                 "img_size": gray.shape[::-1]}
 
-        with open(CALIBRATION_FILE, 'wb') as f:
+        with open(calibration_file, 'wb') as f:
             pickle.dump(d, f)
 
         return d
 
 
 if __name__ == '__main__':
-    calibrate(r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\chess_right*')
+    calibrate(r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\sampleImages\chess*', 'calibration.pickle')
