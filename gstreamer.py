@@ -19,16 +19,16 @@ GSTREAMER_LAUNCH_COMMAND = 'gst-launch-1.0 -v -e '
 DEFAULTS = {
     'width': 640,
     'height': 480,
-    'bitrate': 2000000, # 2 Mbps (after h.264 encoding)
+    'bitrate': 1000000, # 1 Mbps (after h.264 encoding)
     'framerate': 15,
-    'host': '192.168.1.123',
+    'host': '127.0.0.1',
     'port': 5001,
     'iso': 100,
     'shutter': 2000,
     'awb': False, # Auto white balance
     'ab': 2.5, # Blue component of white balance
     'ar': 1, # Red component of white balance
-    'expmode': 0, # 0 for manual, 1 for auto
+    'expmode': 6, # 0 for manual, 1 for auto, 6 for sports
     'sink_name': SINK_NAME,
     'src_name': SRC_NAME,
     'udp_name': UDP_NAME,
@@ -98,7 +98,7 @@ class RaspiCam(PipelinePart):
         if kw['expmode'] == 0:
             exp_str = 'exposure-mode={expmode} iso={iso} shutter-speed={shutter}'
         else:
-            exp_str = ''
+            exp_str = 'exposure-mode={expmode}'
         return super().__new__(cls, (
             'rpicamsrc name={src_name} preview=false '
             + awb_str
@@ -106,6 +106,38 @@ class RaspiCam(PipelinePart):
             ' ! video/x-raw, format=I420, width={width}, height={height}, '
             'framerate={framerate}/1'
         ).format(**kw))
+
+class H264RaspiCam(PipelinePart):
+    """
+    A GStreamer pipeline part that takes in video from a Raspberry Pi
+    Camera Module and outputs h264 video.
+
+    The optional keyword arguments are as follows: iso, shutter, ab, ar,
+    width, height, framerate
+
+    Note that there are some issues using this with lower exposure
+    modes. Proceed with caution. However, this does allow for setting a
+    constant bitrate.
+    """
+    def __new__(cls, **kwargs):
+        kw = merge_defaults(kwargs)
+        if kw['awb']:
+            awb_str = ''
+        else:
+            awb_str = 'awb-mode=off awb-gain-blue={ab} awb-gain-red={ar} '
+
+        if kw['expmode'] == 0:
+            exp_str = 'exposure-mode={expmode} iso={iso} shutter-speed={shutter}'
+        else:
+            exp_str = 'exposure-mode={expmode}'
+        return super().__new__(cls, (
+            'rpicamsrc name={src_name} preview=false bitrate={bitrate} '
+            + awb_str
+            + exp_str +
+            ' ! video/x-h264, width={width}, height={height}, profile=high, '
+            'framerate={framerate}/1'
+        ).format(**kw))
+
 
 class TestSrc(PipelinePart):
     """

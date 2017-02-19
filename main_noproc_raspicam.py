@@ -1,38 +1,20 @@
 """
-This program serves a test stream that can be used for debugging
-networking and streaming.
+This program serves a stream of the camera with autofocus turned off.
 """
 
-import time
-import random
 import threading
+import time
+import config
 import gstreamer as gs
 import networking
-import networking.messages as m
 Gst = gs.Gst
 
-def randomcorners():
-    """Return an array of randomized corners"""
-    r = lambda x: random.randint(int(x*0.4), int(x*0.6))
-    cx = r(gs.DEFAULTS['width'])
-    cy = r(gs.DEFAULTS['height'])
-
-    w = int(gs.DEFAULTS['width'] * random.random() * 0.2)
-    h = int(gs.DEFAULTS['height'] * random.random() * 0.2)
-
-    crns = [(cx-w, cy-h), (cx+w, cy-h), (cx+w, cy+h), (cx-w, cy+h)]
-    random.shuffle(crns)
-
-    return crns
-
 if __name__ == '__main__':
+    conf = config.configfor('Driver')
+
     pipeline = gs.pipeline(
-        gs.TestSrc() + gs.H264Video(h264encoder='x264enc') +
-        gs.Tee(
-            't',
-            gs.Valve('valve') + gs.H264Stream(port=5003, host='localhost'),
-            gs.TSFile(gs.ts_filename(), False)
-        )
+        gs.H264RaspiCam(**conf.params) + gs.Valve('valve') +
+        gs.H264Stream(port=5002) # Default to port 5002
     )
     pipeline.set_state(Gst.State.PLAYING)
 
@@ -49,7 +31,7 @@ if __name__ == '__main__':
     debuggingThread.stop()
 
     # Set up server
-    sock, clis = networking.server.create_socket_and_client_list()
+    sock, clis = networking.server.create_socket_and_client_list(port=conf.controlport)
     handler = networking.create_gst_handler(pipeline, None, 'valve',
                                             gs.UDP_NAME)
 
@@ -61,10 +43,7 @@ if __name__ == '__main__':
     print('Streaming... Press Ctrl-C to quit.')
     try:
         while True:
-            crns = [randomcorners(), randomcorners()]
-
-            message = m.create_message(m.TYPE_RESULTS, {m.FIELD_CORNERS: crns})
-            networking.server.broadcast(sock, clis, message)
+            time.sleep(0.1)
     except KeyboardInterrupt:
         pass
     finally:

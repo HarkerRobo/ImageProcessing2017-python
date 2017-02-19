@@ -5,6 +5,7 @@ and sending results back to clients connected to a server.
 
 import threading
 import cv2
+import config
 import gstreamer as gs
 import networking
 import networking.messages as m
@@ -12,10 +13,12 @@ from processing.tapecontours import get_corners_from_image
 Gst = gs.Gst
 
 if __name__ == '__main__':
+    conf = config.configfor('Vision')
+
     gs.delete_socket()
 
     pipeline = gs.pipeline(
-        gs.RaspiCam() +
+        gs.RaspiCam(**conf.params) +
         gs.Tee('t',
                gs.Valve('valve') + gs.H264Video() + gs.H264Stream(),
                gs.SHMSink())
@@ -41,7 +44,7 @@ if __name__ == '__main__':
     debuggingThread.stop()
 
     # Set up server
-    sock, clis = networking.server.create_socket_and_client_list()
+    sock, clis = networking.server.create_socket_and_client_list(port=conf.controlport)
     handler = networking.create_gst_handler(pipeline, gs.SRC_NAME, 'valve',
                                             gs.UDP_NAME)
 
