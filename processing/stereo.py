@@ -13,9 +13,9 @@ CAMERA_MATRIX = np.array([[592.24710402, 0., 309.2252711],
 camera_dist = 0
 
 left_dict = calibrate_camera.calibrate(
-    r'processing/chess_left*', r"processing/calibration.pickle")
+    r'processing/left_images/*', r"processing/calibration.pickle")
 right_dict = calibrate_camera.calibrate(
-    r'processing/chess_right*', r"processing/calibration.pickle.right")
+    r'processing/right_images/*', r"processing/calibration.pickle.right")
 
 reproj_error, camera_matrix_left, dist_coeffs_left, camera_matrix_right, dist_coeffs_right, R, T, E, F = cv2.stereoCalibrate(
     objectPoints=left_dict["obj_points"], imagePoints1=left_dict["img_points"],
