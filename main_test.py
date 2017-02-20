@@ -4,6 +4,7 @@ networking and streaming.
 """
 
 import logging
+import logging.config
 import time
 import random
 import threading

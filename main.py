@@ -4,6 +4,7 @@ and sending results back to clients connected to a server.
 """
 
 import logging
+import logging.config
 import threading
 import cv2
 import config

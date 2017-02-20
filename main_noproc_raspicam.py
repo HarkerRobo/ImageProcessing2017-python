@@ -2,6 +2,7 @@
 This program serves a stream of the camera with autofocus turned off.
 """
 import logging
+import logging.config
 import threading
 import time
 import config
