@@ -8,8 +8,8 @@ def calibrate(image_paths_left, image_paths_right):
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-    pointsY = 6
-    pointsX = 5
+    pointsY = 9
+    pointsX = 9
     objp = np.zeros((pointsX * pointsY, 3), np.float32)
     objp[:, :2] = np.mgrid[0:pointsY, 0:pointsX].T.reshape(-1, 2)
 

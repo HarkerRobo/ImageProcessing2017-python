@@ -26,7 +26,7 @@ camera_dist = 0
 # dict = {"left": {"camera_matirx": cameraMatrix1, "dist_coeffs": distCoeffs1},
 #         "right": {"camera_matirx": cameraMatrix1, "dist_coeffs": distCoeffs2},
 #         "reproj_error": retval, "rot_matrix": R, "trans_matrix": T, "ess_matrix": E, "fund_matrix": F}
-with open("calibration.pickle", "rb") as p:
+with open("processing/calibration.pickle", "rb") as p:
     calib_dict = pickle.load(p)
 def process(left_img, right_img):
     # image
