@@ -17,43 +17,39 @@ def calibrate(image_paths_left, image_paths_right):
     imgpoints_left = []
     imgpoints_right = []
 
-    # images = glob.glob(r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\sampleImages\chess*')
-    images = glob.glob(image_paths_left)
-    gray = None
-    for fname in images:
-        img = cv2.imread(fname)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    images_left = glob.glob(image_paths_left)
+    images_right = glob.glob(image_paths_right)
 
-        # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (pointsY, pointsX), None)
+    for pair in zip(images_left, images_right):
 
-        # If found, add object points, image points
-        if ret == True:
+        img_left = cv2.imread(pair[0])
+        img_right = cv2.imread(pair[1])
+        img_left = cv2.cvtColor(img_left, cv2.COLOR_BGR2GRAY)
+        img_right = cv2.cvtColor(img_right, cv2.COLOR_BGR2GRAY)
+
+
+
+        ret_left, corners_left = cv2.findChessboardCorners(img_left, (pointsY, pointsX))
+        ret_right, corners_right = cv2.findChessboardCorners(img_right, (pointsY, pointsX))
+
+        if (ret_left and ret_right):
             objpoints.append(objp)
-            corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
-            imgpoints_left.append(corners2)
 
-    images = glob.glob(image_paths_right)
-    gray = None
-    for fname in images:
-        img = cv2.imread(fname)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            corners_left_2 = cv2.cornerSubPix(img_left, corners_left, (11, 11), (-1, -1), criteria)
+            corners_right_2 = cv2.cornerSubPix(img_right, corners_right, (11, 11), (-1, -1), criteria)
 
-        # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (pointsY, pointsX), None)
+            imgpoints_left.append(corners_left_2)
+            imgpoints_right.append(corners_right_2)
 
-        # If found, add object points, image points
-        if ret == True:
-            # objpoints.append(objp)
-            corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
-            imgpoints_right.append(corners2)
+
+
 
     retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(objpoints,
                                                                                                      imgpoints_left,
                                                                                                      imgpoints_right,
                                                                                                      None, None, None,
                                                                                                      None,
-                                                                                                     gray.shape[::-1])
+                                                                                                     images_left[0].shape[::-1])
 
     # reproj_error, camera_matrix, distance_coeffs, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints,
     #                                                                                  gray.shape[::-1], None, None)
