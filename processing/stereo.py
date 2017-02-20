@@ -13,7 +13,7 @@ CAMERA_MATRIX = np.array([[592.24710402, 0., 309.2252711],
 camera_dist = 0
 
 left_dict = calibrate_camera.calibrate(
-    r'processing/left_images/*', r"processing/calibration.pickle")
+    r'processing/left_images/*', r"processing/calibration.pickle.left")
 right_dict = calibrate_camera.calibrate(
     r'processing/right_images/*', r"processing/calibration.pickle.right")
 
