@@ -91,6 +91,8 @@ def process(left_img, right_img):
 
     mystery = cv2.triangulatePoints(projMatr1=P1, projMatr2=P2, projPoints1=corners_left, projPoints2=corners_right)
     print(mystery)
+
+    # focal length is in camera matrix (fx)
     # Z = (b * f) / (x1 - x2)
     # b = distance between lens
     # distance = (camera_dist_between_lenses*focal length)/(disparity)
