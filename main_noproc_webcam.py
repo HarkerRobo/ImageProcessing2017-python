@@ -1,7 +1,8 @@
 """
 This program serves a stream of the camera with autofocus turned off.
 """
-
+import logging
+import logging.config
 import threading
 import time
 import config
@@ -11,6 +12,10 @@ Gst = gs.Gst
 
 if __name__ == '__main__':
     conf = config.configfor('Gear')
+
+    logging.config.dictConfig(conf.logging)
+    logger = logging.getLogger(__name__)
+
 
     pipeline = gs.pipeline(
         gs.Webcam(**conf.params) + gs.Valve('valve') +
@@ -23,7 +28,7 @@ if __name__ == '__main__':
     debuggingThread.start()
 
     # TODO: Find a better method to wait for playback to start
-    print(pipeline.get_state(Gst.CLOCK_TIME_NONE)) # Wait for pipeline to play
+    logging.debug(pipeline.get_state(Gst.CLOCK_TIME_NONE)) # Wait for pipeline to play
 
     # Now that the pipeline has been (hopefully) successfully started,
     # GStreamer doesn't need to be debugged anymore and the thread can be
@@ -40,7 +45,7 @@ if __name__ == '__main__':
     acceptThread.daemon = True # Makes the thread quit with the current thread
     acceptThread.start()
 
-    print('Streaming... Press Ctrl-C to quit.')
+    logging.info('Streaming... Press Ctrl-C to quit.')
     try:
         while True:
             time.sleep(0.1)

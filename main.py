@@ -3,6 +3,8 @@ This program serves streams from the camera as well as processing them
 and sending results back to clients connected to a server.
 """
 
+import logging
+import logging.config
 import threading
 import cv2
 import config
@@ -14,6 +16,10 @@ Gst = gs.Gst
 
 if __name__ == '__main__':
     conf = config.configfor('Vision')
+
+    logging.config.dictConfig(conf.logging)
+    logger = logging.getLogger(__name__)
+
 
     gs.delete_socket()
 
@@ -31,7 +37,7 @@ if __name__ == '__main__':
     debuggingThread.start()
 
     # TODO: Find a better method to wait for playback to start
-    print(pipeline.get_state(Gst.CLOCK_TIME_NONE)) # Wait for pipeline to play
+    logger.debug(pipeline.get_state(Gst.CLOCK_TIME_NONE)) # Wait for pipeline to play
 
     caps = gs.get_sink_caps(pipeline.get_by_name(gs.SINK_NAME))
     cap_string = gs.make_command_line_parsable(caps)

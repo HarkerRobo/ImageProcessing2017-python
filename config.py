@@ -21,12 +21,12 @@ def getconfig(stream=open(FILE_LOCATION), file=True):
     else:
         return ruamel.yaml.load(stream, ruamel.yaml.RoundTripLoader)
 
-Config = namedtuple('Config', ['ip', 'params', 'controlport'])
+Config = namedtuple('Config', ['ip', 'params', 'controlport', 'logging'])
 
 def fromyaml(yaml):
     """Return a config named tuple from a given piece of yaml."""
     return Config(ip=yaml['ip'], params=dict(yaml['params']),
-                  controlport=yaml['ports']['control'])
+                  controlport=yaml['ports']['control'], logging=yaml['logging'])
 
 def configfor(name, stream=FILE_LOCATION, file=True):
     """Return the configuration for the stream with the specified name.
