@@ -4,6 +4,7 @@ streaming camera outputs.
 """
 
 from datetime import datetime
+import logging
 import os
 import threading
 
@@ -35,6 +36,8 @@ DEFAULTS = {
     'socket_path': SOCKET_PATH,
     'h264encoder': 'omxh264enc' # Name of GStreamer element to encode h.264
 }
+
+logger = logging.getLogger(__name__)
 
 merge_defaults = lambda k: dict(DEFAULTS, **k)
 
@@ -309,22 +312,22 @@ def print_message(message):
     if message.type == Gst.MessageType.ERROR:
         err, debug = message.parse_error()
         element = message.src.get_name()
-        print('Error received from element {}: {}'.format(element, err))
-        print('Debugging information: {}'.format(debug))
+        logger.error('Error received from element {}: {}'.format(element, err))
+        logger.error('Debugging information: {}'.format(debug))
 
     elif message.type == Gst.MessageType.EOS:
-        print('End-Of-Stream reached.')
+        logger.debug('End-Of-Stream reached.')
 
     elif message.type == Gst.MessageType.STATE_CHANGED:
         if isinstance(message.src, Gst.Pipeline):
             old_state, new_state, _ = message.parse_state_changed()
             old = old_state.value_nick
             new = new_state.value_nick
-            print('Pipeline state changed from {} to {}'.format(old, new))
+            logger.debug('Pipeline state changed from {} to {}'.format(old, new))
 
     else:
         m_type = message.type
-        print('Unexpected message of type {} received.'.format(m_type))
+        logger.error('Unexpected message of type {} received.'.format(m_type))
 
 class MessagePrinter(threading.Thread):
     """Thread that coninously queries the pipeline's bus for messages,

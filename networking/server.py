@@ -3,6 +3,7 @@ Code to launch the TCP socket server that will both manage streaming and
 send image processing results to the roborio
 """
 
+import logging
 import select
 import socket
 import threading
@@ -12,6 +13,8 @@ HOST = '0.0.0.0' # For accepting connections from any device
 PORT = 6000
 BACKLOG = 5 # Maximum number of clients
 SIZE = 1024 # Maximum message size
+
+logger = logging.getLogger(__name__)
 
 def create_socket_and_client_list(host=HOST, port=PORT, backlog=BACKLOG):
     """
@@ -65,7 +68,7 @@ def AcceptClients(server_socket, clients, on_new_message):
                             x.close()
                             clients.remove(x)
                     except UnicodeDecodeError:
-                        print('Unicode error')
+                        logger.error('Unicode error')
                     except ConnectionResetError:
                         pass
         except:

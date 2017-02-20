@@ -48,7 +48,7 @@ if __name__ == '__main__':
     debuggingThread.start()
 
     # TODO: Find a better method to wait for playback to start
-    print(pipeline.get_state(Gst.CLOCK_TIME_NONE)) # Wait for pipeline to play
+    logger.debug(pipeline.get_state(Gst.CLOCK_TIME_NONE)) # Wait for pipeline to play
 
     # Now that the pipeline has been (hopefully) successfully started,
     # GStreamer doesn't need to be debugged anymore and the thread can be
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     acceptThread.daemon = True # Makes the thread quit with the current thread
     acceptThread.start()
 
-    print('Streaming... Press Ctrl-C to quit.')
+    logger.info('Streaming... Press Ctrl-C to quit.')
     try:
         while True:
             crns = [randomcorners(), randomcorners()]
