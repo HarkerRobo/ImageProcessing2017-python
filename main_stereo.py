@@ -57,4 +57,3 @@ if __name__ == '__main__':
         if cv2.waitKey(1) == ord('q') and len(corns) == 2:
             print("Right: " + str(corns))
             break
-

@@ -3,6 +3,7 @@ This program serves a test stream that can be used for debugging
 networking and streaming.
 """
 
+import logging
 import time
 import random
 import threading
@@ -26,6 +27,11 @@ def randomcorners():
     return crns
 
 if __name__ == '__main__':
+    conf = config.configfor('Vision')
+
+    logging.config.dictConfig(conf.logging)
+    logger = logging.getLogger(__name__)
+
     pipeline = gs.pipeline(
         gs.TestSrc() + gs.H264Video(h264encoder='x264enc') +
         gs.Tee(

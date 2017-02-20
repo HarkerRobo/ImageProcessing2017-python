@@ -1,7 +1,7 @@
 """
 This program serves a stream of the camera with autofocus turned off.
 """
-
+import logging
 import threading
 import time
 import config
@@ -11,6 +11,10 @@ Gst = gs.Gst
 
 if __name__ == '__main__':
     conf = config.configfor('Gear')
+
+    logging.config.dictConfig(conf.logging)
+    logger = logging.getLogger(__name__)
+
 
     pipeline = gs.pipeline(
         gs.Webcam(**conf.params) + gs.Valve('valve') +

@@ -3,6 +3,7 @@ This program serves streams from the camera as well as processing them
 and sending results back to clients connected to a server.
 """
 
+import logging
 import threading
 import cv2
 import config
