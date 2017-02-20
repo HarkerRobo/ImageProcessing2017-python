@@ -33,6 +33,7 @@ class ConfigTest(unittest.TestCase):
   ports:
     control: 1234
     stream: 2345
+  logging: "yay logging!"
 """
 
     def test_valid_read(self):
