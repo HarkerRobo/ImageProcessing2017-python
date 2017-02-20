@@ -19,19 +19,21 @@ def calibrate(image_paths_left, image_paths_right):
 
     images_left = glob.glob(image_paths_left)
     images_right = glob.glob(image_paths_right)
-
+    img_left = None
     for pair in zip(images_left, images_right):
-
+        # print(pair)
         img_left = cv2.imread(pair[0])
         img_right = cv2.imread(pair[1])
+
         img_left = cv2.cvtColor(img_left, cv2.COLOR_BGR2GRAY)
+
         img_right = cv2.cvtColor(img_right, cv2.COLOR_BGR2GRAY)
 
 
 
         ret_left, corners_left = cv2.findChessboardCorners(img_left, (pointsY, pointsX))
         ret_right, corners_right = cv2.findChessboardCorners(img_right, (pointsY, pointsX))
-
+        print(ret_left and ret_right)
         if (ret_left and ret_right):
             objpoints.append(objp)
 
@@ -49,7 +51,7 @@ def calibrate(image_paths_left, image_paths_right):
                                                                                                      imgpoints_right,
                                                                                                      None, None, None,
                                                                                                      None,
-                                                                                                     images_left[0].shape[::-1])
+                                                                                                     img_left.shape[::-1])
 
     # reproj_error, camera_matrix, distance_coeffs, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints,
     #                                                                                  gray.shape[::-1], None, None)
@@ -58,10 +60,12 @@ def calibrate(image_paths_left, image_paths_right):
     #         "img_size": gray.shape[::-1]}
     dict = {"left": {"camera_matirx": cameraMatrix1, "dist_coeffs": distCoeffs1},
             "right": {"camera_matirx": cameraMatrix1, "dist_coeffs": distCoeffs2},
-            "reproj_error": retval, "rot_matrix":R, "trans_matrix":T, "ess_matrix":E, "fund_matrix":F}
+            "reproj_error": retval, "rot_matrix":R, "trans_matrix":T, "ess_matrix":E, "fund_matrix":F, "img_size":img_left.shape[::-1]}
 
+    with open('calibration.pickle', 'wb') as f:
+        pickle.dump(dict, f)
     return dict
 
 
 if __name__ == '__main__':
-    calibrate(r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\sampleImages\chess*')
+    dict = calibrate(r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\left_images\*',r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\right_images\*' )
