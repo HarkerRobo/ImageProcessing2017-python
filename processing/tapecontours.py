@@ -305,7 +305,7 @@ def get_tape_contours_and_corners(mask, debug_img=None):
 
     return found_contours, found_corners
 
-def get_corners_from_image(img, n, show_image=DEBUG):
+def get_corners_from_image(img, n='', show_image=DEBUG):
     """Return an array of the corners of the tape in a given image."""
     debug_img = img.copy() if show_image else None
 
