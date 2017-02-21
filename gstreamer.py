@@ -21,6 +21,7 @@ DEFAULTS = {
     'width': 640,
     'height': 480,
     'bitrate': 1000000, # 1 Mbps (after h.264 encoding)
+    'quant_param': 0, # Quantisation parameter - higher is lower quality, 0=off
     'framerate': 15,
     'host': '127.0.0.1',
     'port': 5001,
@@ -134,7 +135,8 @@ class H264RaspiCam(PipelinePart):
         else:
             exp_str = 'exposure-mode={expmode}'
         return super().__new__(cls, (
-            'rpicamsrc name={src_name} preview=false bitrate={bitrate} '
+            'rpicamsrc name={src_name} preview=false '
+            'bitrate={bitrate} quantisation-parameter={quant_param}'
             + awb_str
             + exp_str +
             ' ! video/x-h264, width={width}, height={height}, profile=high, '

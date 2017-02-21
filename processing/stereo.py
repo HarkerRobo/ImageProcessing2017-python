@@ -97,7 +97,6 @@ def process(left_img, right_img):
     #     disparity = point_pair["left"]["x"] - point_pair["right"]["x"]
     #     reconstructed_point = (point_pair["left"]["x"], point_pair["left"]["y"], disparity)
     #     reconstructed_points.append(reconstructed_point)
-
     #print(corners_left)
     #print("durrr")
     #print(corners_left.T)
@@ -123,6 +122,10 @@ def process(left_img, right_img):
     #m2 = np.resize(mystery, (1, 4))
     #print(m2)
     #print(m2, cv2.convertPointsFromHomogeneous(m2))
+   # mystery = cv2.triangulatePoints(projMatr1=P1, projMatr2=P2, projPoints1=corners_left, projPoints2=corners_right)
+   # print(mystery)
+
+    # focal length is in camera matrix (fx)
     # Z = (b * f) / (x1 - x2)
     # b = distance between lens
     # distance = (camera_dist_between_lenses*focal length)/(disparity)
