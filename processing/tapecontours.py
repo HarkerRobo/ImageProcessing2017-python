@@ -10,7 +10,7 @@ import numpy as np
 from .drawing import draw_corners
 
 LOW_GREEN = np.array([40, 100, 100])
-UPPER_GREEN = np.array([80, 255, 255])
+UPPER_GREEN = np.array([100, 255, 255])
 
 MAX_AREA_ERROR = 0.6 # If two contours have to be combined to form the second
                       # rectangle, the percent error in for their area and
@@ -305,16 +305,16 @@ def get_tape_contours_and_corners(mask, debug_img=None):
 
     return found_contours, found_corners
 
-def get_corners_from_image(img, show_image=DEBUG):
+def get_corners_from_image(img, n, show_image=DEBUG):
     """Return an array of the corners of the tape in a given image."""
     debug_img = img.copy() if show_image else None
 
     mask = get_mask(img)
     if show_image:
-        cv2.imshow('mask', mask)
+        cv2.imshow('mask{}'.format(n), mask)
     _, crns = get_tape_contours_and_corners(mask, debug_img)
 
     if show_image:
-        cv2.imshow('corners', debug_img)
+        cv2.imshow('corners{}'.format(n), debug_img)
 
     return crns
