@@ -37,7 +37,7 @@ if __name__ == '__main__':
         corners = get_corners_from_image(img, show_image=True)
         corns = [[(int(a[0]), int(a[1])) for a in b] for b in corners]
 
-        if cv2.waitKey(1) == ord('q') and   len(corns) == 2:
+        if cv2.waitKey(1) == ord('q') and len(corns) == 2:
             print("Left: " + str(corns))
             break
 

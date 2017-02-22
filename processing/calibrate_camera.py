@@ -4,15 +4,15 @@ import glob
 import pickle
 
 def calibrate(image_paths, calibration_file):
-    try:
-        with open(calibration_file, 'rb') as f:
-            return pickle.load(f)
-    except:
+    # try:
+    #     with open(calibration_file, 'rb') as f:
+    #         return pickle.load(f)
+    # except:
         # termination criteria
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
         pointsY = 9
-        pointsX = 9
+        pointsX = 6
         objp = np.zeros((pointsX * pointsY, 3), np.float32)
         objp[:, :2] = np.mgrid[0:pointsY, 0:pointsX].T.reshape(-1, 2)
 
@@ -31,7 +31,7 @@ def calibrate(image_paths, calibration_file):
             ret, corners = cv2.findChessboardCorners(img, (pointsY, pointsX), None)
 
             # If found, add object points, image points
-            print(ret)
+            # print(ret)
 
             if ret == True:
 
@@ -40,16 +40,10 @@ def calibrate(image_paths, calibration_file):
                 corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
                 imgpoints.append(corners2)
 
-                # Draw and display the corners
-                # cv2.drawChessboardCorners(img, (7, 6), corners, ret)
-                # cv2.drawChessboardCorners(img, (7, 6), corners2, ret)
-                # cv2.imshow('img', img)
-                # cv2.waitKey(500)
-                # print(imgpoints)
-                # print(objpoints)
 
-        print(imgpoints)
-        print(objpoints)
+
+        # print(imgpoints)
+        # print(objpoints)
         reproj_error, camera_matrix, distance_coeffs, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints,
                                                                                         gray.shape[::-1], None, None)
         d = {"reproj_error": reproj_error, "camera_matrix": camera_matrix, "distance_coeffs": distance_coeffs,
@@ -58,9 +52,9 @@ def calibrate(image_paths, calibration_file):
 
         with open(calibration_file, 'wb') as f:
             pickle.dump(d, f)
+        print(d["camera_matrix"])
 
-        return d
 
 
 if __name__ == '__main__':
-    calibrate(r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\right_images\*', 'calibration.pickle.right')
+    calibrate(r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\right\*', 'calibration.pickle.right')

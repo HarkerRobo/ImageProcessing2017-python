@@ -29,20 +29,13 @@ camera_dist = 0
 #         "reproj_error": retval, "rot_matrix": R, "trans_matrix": T, "ess_matrix": E, "fund_matrix": F}
 with open("processing/calibration.pickle", "rb") as p:
     calib_dict = pickle.load(p)
+
+
 def process(left_img, right_img):
     # image
 
 
-    try:
-        corners_left = np.concatenate(tapecontours.get_corners_from_image(left_img, 1))
-        corners_right = np.concatenate(tapecontours.get_corners_from_image(right_img, 2))
-    except Exception as e:
-        return
-    if len(corners_left) != 8 or len(corners_right) != 8:
-        #print(corners_left)
-        #print(corners_right)
-        print("did not werk")
-        return
+
 
     # reproj_error, camera_matrix,  distance_coeffs, rvecs, tvecs, obj_points, img_points, img_size
 
@@ -64,9 +57,17 @@ def process(left_img, right_img):
     #                         config.camera.right_intrinsics,
     #                         config.camera.right_distortion,
     # config.camera.size, R, T, alpha=0)
-    #R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(cameraMatrix1=calib_dict["left"]["camera_matirx"], distCoeffs1=calib_dict["left"]["dist_coeffs"],
-    #                                                  cameraMatrix2=calib_dict["right"]["camera_matirx"], distCoeffs2=calib_dict["right"]["dist_coeffs"],
-    #                                                  imageSize=calib_dict["img_size"], R=calib_dict["rot_matrix"], T=calib_dict["trans_matrix"])
+    R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(cameraMatrix1=calib_dict["left"]["camera_matirx"], distCoeffs1=calib_dict["left"]["dist_coeffs"],
+                                                     cameraMatrix2=calib_dict["right"]["camera_matirx"], distCoeffs2=calib_dict["right"]["dist_coeffs"],
+                                                     imageSize=calib_dict["img_size"], R=calib_dict["rot_matrix"], T=calib_dict["trans_matrix"])
+
+    left_maps = cv2.initUndistortRectifyMap(calib_dict["left"]["camera_matirx"], calib_dict["left"]["dist_coeffs"], R1, P1, (640, 480),
+                                            cv2.CV_16SC2)
+    right_maps = cv2.initUndistortRectifyMap(calib_dict["right"]["camera_matirx"], calib_dict["right"]["dist_coeffs"], R2, P2, (640, 480),
+                                             cv2.CV_16SC2)
+
+
+
 
     P1 = np.array([[   1.,           0.,          108.48160885,    0.        ],
  [   0.,            1.,          -10.66847563,    0.        ],
@@ -75,57 +76,40 @@ def process(left_img, right_img):
  [   0.,            1.,          -10.66847563,    0.        ],
  [   0.,            0.,            1.,            0.        ]])
    # print(P1, P2)
-    # left_maps = cv2.initUndistortRectifyMap(camera_matrix_left, dist_coeffs_left, R1, P1, left_dict["img_size"],
-    #                                         cv2.CV_16SC2)
-    # right_maps = cv2.initUndistortRectifyMap(camera_matrix_right, dist_coeffs_right, R2, P2, left_dict["img_size"],
-    #                                          cv2.CV_16SC2)
-    #
-    # left_img_remap = cv2.remap(left_img, left_maps[0], left_maps[1], cv2.INTER_LANCZOS4)
-    # right_img_remap = cv2.remap(right_img, right_maps[0], right_maps[1], cv2.INTER_LANCZOS4)
-
-    # corners_left = [[(402, 434), (402, 327), (448, 327), (448, 434)], [(242, 421), (242, 324), (290, 324), (290, 421)]]
-    #
-    #
-    # corners_right = [[(508, 430), (508, 324), (552, 324), (552, 430)], [(342, 427), (342, 326), (384, 326), (384, 427)]]
-    # corners_left= np.asarray(corners_left, dtype=np.float32)
-    # corners_right= np.asarray(corners_right, dtype=np.float32)
 
 
-    # reconstructed_points = []
-    # point_pairs = []
-    # for point_pair in point_pairs:
-    #     disparity = point_pair["left"]["x"] - point_pair["right"]["x"]
-    #     reconstructed_point = (point_pair["left"]["x"], point_pair["left"]["y"], disparity)
-    #     reconstructed_points.append(reconstructed_point)
-    #print(corners_left)
-    #print("durrr")
-    #print(corners_left.T)
-    #print(corners_right.shape)
-    #print("hallo")
- 
-    #with open("/proc/meminfo") as f:
-    #    print(''.join(f.readlines()))
-    print("*"*20)
-    print(corners_left, corners_right)
-    print("*"*20)
-    clt = np.transpose(corners_left[0])
-    rlt = np.transpose(corners_right[0])
-    #print('hi')
-    #print(clt)
-    #print(rlt)
-    mystery = cv2.triangulatePoints(projMatr1=P1, projMatr2=P2, projPoints1=clt, projPoints2=rlt)
-    #print('='*20)
-    #print(mystery)
-   # print('='*20)
-   # print('hello there')
-    #print(mystery)
-    #m2 = np.resize(mystery, (1, 4))
-    #print(m2)
-    #print(m2, cv2.convertPointsFromHomogeneous(m2))
-   # mystery = cv2.triangulatePoints(projMatr1=P1, projMatr2=P2, projPoints1=corners_left, projPoints2=corners_right)
-   # print(mystery)
+    left_img_remap = cv2.remap(left_img, left_maps[0], left_maps[1], cv2.INTER_LANCZOS4)
+    right_img_remap = cv2.remap(right_img, right_maps[0], right_maps[1], cv2.INTER_LANCZOS4)
 
-    # focal length is in camera matrix (fx)
+    cv2.imshow('left', left_img_remap)
+    cv2.imshow('right', left_img_remap)
+
+
+
+    try:
+        corners_left = np.concatenate(tapecontours.get_corners_from_image(left_img, 1))
+        corners_right = np.concatenate(tapecontours.get_corners_from_image(right_img, 2))
+    except Exception as e:
+        return
+    if len(corners_left) != 8 or len(corners_right) != 8:
+        #print(corners_left)
+        #print(corners_right)
+        print("did not werk")
+        return
+
+    reconstructed_points = []
+    point_pairs = zip(list(corners_left), list(corners_right))
+    for point_pair in point_pairs:
+
+        disparity = point_pair[0][0] - point_pair[1][0]
+        print("Disparity: {}".format(disparity))
+        reconstructed_point = (point_pair["left"]["x"], point_pair["left"]["y"], disparity)
+        reconstructed_points.append(reconstructed_point)
+        print(reconstructed_point)
+
+
+
+        # focal length is in camera matrix (fx)
     # Z = (b * f) / (x1 - x2)
     # b = distance between lens
     # distance = (camera_dist_between_lenses*focal length)/(disparity)

@@ -9,7 +9,7 @@ def calibrate(image_paths_left, image_paths_right):
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
     pointsY = 9
-    pointsX = 9
+    pointsX = 6
     objp = np.zeros((pointsX * pointsY, 3), np.float32)
     objp[:, :2] = np.mgrid[0:pointsY, 0:pointsX].T.reshape(-1, 2)
 
@@ -29,8 +29,6 @@ def calibrate(image_paths_left, image_paths_right):
 
         img_right = cv2.cvtColor(img_right, cv2.COLOR_BGR2GRAY)
 
-
-
         ret_left, corners_left = cv2.findChessboardCorners(img_left, (pointsY, pointsX))
         ret_right, corners_right = cv2.findChessboardCorners(img_right, (pointsY, pointsX))
         print(ret_left and ret_right)
@@ -45,27 +43,31 @@ def calibrate(image_paths_left, image_paths_right):
 
 
 
+    cameraMatrix1 = None
+    cameraMatrix2 = None
+    distCoeffs1 = None
+    distCoeffs2 = None
 
     retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(objpoints,
                                                                                                      imgpoints_left,
                                                                                                      imgpoints_right,
                                                                                                      None, None, None,
                                                                                                      None,
-                                                                                                     img_left.shape[::-1])
+                                                                                                     (640, 480))
 
-    # reproj_error, camera_matrix, distance_coeffs, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints,
-    #                                                                                  gray.shape[::-1], None, None)
-    # dict = {"reproj_error": reproj_error, "camera_matrix": camera_matrix, "distance_coeffs": distance_coeffs,
-    #         "rvecs": rvecs, "tvecs": tvecs, "obj_points": objpoints, "img_points": imgpoints_left,
-    #         "img_size": gray.shape[::-1]}
+
+
     dict = {"left": {"camera_matirx": cameraMatrix1, "dist_coeffs": distCoeffs1},
-            "right": {"camera_matirx": cameraMatrix1, "dist_coeffs": distCoeffs2},
-            "reproj_error": retval, "rot_matrix":R, "trans_matrix":T, "ess_matrix":E, "fund_matrix":F, "img_size":img_left.shape[::-1]}
+            "right": {"camera_matirx": cameraMatrix2, "dist_coeffs": distCoeffs2},
+            "reproj_error": retval, "rot_matrix":R, "trans_matrix":T, "ess_matrix":E, "fund_matrix":F, "img_size":  (640,480)}
 
+
+    print(dict)
     with open('calibration.pickle', 'wb') as f:
         pickle.dump(dict, f)
     return dict
 
 
 if __name__ == '__main__':
-    dict = calibrate(r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\left_images\*',r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\right_images\*' )
+    dict = calibrate(r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\left\*',r'C:\Users\Austin\Desktop\roboimage\ImageProcessing2017-python\processing\right\*' )
+    print(dict)
