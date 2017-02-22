@@ -106,7 +106,7 @@ def process(left_img, right_img):
 
         disparity = point_pair[0][0] - point_pair[1][0]
         print("Disparity: {}".format(disparity))
-        reconstructed_point = (point_pair["left"]["x"], point_pair["left"]["y"], disparity)
+        reconstructed_point = (point_pair[0][0], point_pair["left"]["y"],[0][0])
         reconstructed_points.append(reconstructed_point)
         print(reconstructed_point)
 
