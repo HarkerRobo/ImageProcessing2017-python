@@ -82,7 +82,7 @@ def process(left_img, right_img):
     right_img_remap = cv2.remap(right_img, right_maps[0], right_maps[1], cv2.INTER_LANCZOS4)
 
     cv2.imshow('left', left_img_remap)
-    cv2.imshow('right', left_img_remap)
+    cv2.imshow('right', right_img_remap)
 
 
 
