@@ -90,7 +90,9 @@ def process(left_img, right_img):
         corners_left = np.concatenate(tapecontours.get_corners_from_image(left_img, 1))
         corners_right = np.concatenate(tapecontours.get_corners_from_image(right_img, 2))
     except Exception as e:
+
         print("Corner fail")
+        print(e)
         return
     if len(corners_left) != 8 or len(corners_right) != 8:
         #print(corners_left)
