@@ -34,7 +34,7 @@ class IntegrationTest(unittest.TestCase):
 
     def setUp(self):
         # First stream a pattern of 7 bars of 100% intensity to a v4l2 device
-        self.inpipe = gs.pipeline('videotestsrc pattern=smpte100 ! '
+        self.inpipe = gs.pipeline('videotestsrc pattern=smpte100 ! jpegenc ! '
                                   'v4l2sink device=/dev/video0')
         debuggingThread = gs.MessagePrinter(self.inpipe)
         debuggingThread.start()
@@ -82,7 +82,7 @@ class IntegrationTest(unittest.TestCase):
         self.cap1 = cv2.VideoCapture(0)
         stat, im = self.cap1.read()
 
-        self.assertTrue(stat, 'OpenCV could not read a frame from the stream')
+        self.assertTrue(stat, 'OpenCV could not read from input stream')
         self.assertTrue(np.array_equal(im[0][0], [255, 255, 255]),
                         'Top left pixel of image is not white')
         self.assertTrue(np.array_equal(im[0][im.shape[1]-1], [255, 0, 0]),
