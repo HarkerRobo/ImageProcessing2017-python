@@ -75,8 +75,10 @@ class IntegrationTest(unittest.TestCase):
         self.cap1 = None
         self.cap2 = None
 
-    def test_input(self):
-        """Tests that the gstreamer process generates correct images."""
+    def test_works(self):
+        """Test that the stream can be correctly read."""
+
+        # Test that input stream is working
         self.cap1 = cv2.VideoCapture(0)
         _, im = self.cap1.read()
 
@@ -84,10 +86,6 @@ class IntegrationTest(unittest.TestCase):
                         'Top left pixel of image is not white')
         self.assertTrue(np.array_equal(im[0][im.shape[1]-1], [255, 0, 0]),
                         'Top right pixel of image is not blue')
-
-
-    def test_works(self):
-        """Test that the stream can be correctly read."""
 
         # Start the stream
         self.s.send(m.create_message('start', {
