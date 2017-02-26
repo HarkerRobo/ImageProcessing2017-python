@@ -19,6 +19,7 @@ addons:
             - gstreamer1.0-tools
             - gstreamer1.0-libav
             - gstreamer1.0-plugins-good
+            - gstreamer1.0-plugins-bad
             - gstreamer1.0-plugins-ugly
             - libgstreamer1.0-dev
             - python3-gi
@@ -40,4 +41,4 @@ install:
     - sudo cp $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi/_gi*) "$(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)/_gi.so"
     - "ls $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)"
 
-script: python3 -m unittest discover -s tests
+script: sudo python3 -m unittest discover -s tests
