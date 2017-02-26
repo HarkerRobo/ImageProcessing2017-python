@@ -80,8 +80,9 @@ class IntegrationTest(unittest.TestCase):
 
         # Test that input stream is working
         self.cap1 = cv2.VideoCapture(0)
-        _, im = self.cap1.read()
+        stat, im = self.cap1.read()
 
+        self.assertTrue(stat, 'OpenCV could not read a frame from the stream')
         self.assertTrue(np.array_equal(im[0][0], [255, 255, 255]),
                         'Top left pixel of image is not white')
         self.assertTrue(np.array_equal(im[0][im.shape[1]-1], [255, 0, 0]),
