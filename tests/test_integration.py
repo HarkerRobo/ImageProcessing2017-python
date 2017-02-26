@@ -24,7 +24,7 @@ import gstreamer as gs
 import networking
 import networking.messages as m
 from processing.tapecontours import get_corners_from_image
-Gst = gs.Gs
+Gst = gs.Gst
 
 class MessagesTest(unittest.TestCase):
     """
