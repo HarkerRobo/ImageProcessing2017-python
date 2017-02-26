@@ -36,6 +36,7 @@ before_install:
     - "ls /dev/video*"
 
 install:
+    - "sudo pip3 install -U pip setuptools"
     - "sudo pip3 install -r requirements.txt"
     - "sudo pip3 install numpy opencv-python"
     - "ln -s /usr/lib/python3/dist-packages/gi $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)"
