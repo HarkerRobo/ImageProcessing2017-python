@@ -19,6 +19,7 @@ addons:
             - gstreamer1.0-tools
             - gstreamer1.0-libav
             - gstreamer1.0-plugins-good
+            - libgstreamer1.0-dev
             - python3-gi
 
 before_install:
