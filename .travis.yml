@@ -30,6 +30,7 @@ before_install:
     - "sudo make install"
     - "cd ../"
     - "sudo modprobe v4l2loopback devices=2"
+    - "ls /dev/video*"
 
 install:
     - "pip3 install -r requirements.txt"

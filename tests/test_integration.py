@@ -36,6 +36,8 @@ class IntegrationTest(unittest.TestCase):
         # First stream a pattern of 7 bars of 100% intensity to a v4l2 device
         self.inpipe = gs.pipeline('videotestsrc pattern=smpte100 ! '
                                   'v4l2sink device=/dev/video0')
+        debuggingThread = gs.MessagePrinter(self.inpipe)
+        debuggingThread.start()
         self.inpipe.set_state(Gst.State.PLAYING)
 
         # Then read images from that device and stream them over a udp
@@ -48,6 +50,8 @@ class IntegrationTest(unittest.TestCase):
 
         # TODO: Find a better method to wait for playback to start
         self.streampipe.get_state(Gst.CLOCK_TIME_NONE)
+
+        debuggingThread.stop()
 
         res = networking.server.create_socket_and_client_list(host='localhost',
                                                               port=0)
