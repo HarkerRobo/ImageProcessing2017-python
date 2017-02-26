@@ -26,7 +26,7 @@ import networking.messages as m
 from processing.tapecontours import get_corners_from_image
 Gst = gs.Gst
 
-class MessagesTest(unittest.TestCase):
+class IntegrationTest(unittest.TestCase):
     """
     This class tries to perform what the main*.py files do but also
     checks to make sure that stuff works.
@@ -72,7 +72,7 @@ class MessagesTest(unittest.TestCase):
         """Test that the stream can be correctly read."""
 
         # Start the stream
-        self.s.send(m.create('start', {
+        self.s.send(m.create_message('start', {
             m.FIELD_HOST: self.sock.getsockname()[0],
             m.FIELD_PORT: self.sock.getsockname()[1],
             m.FIELD_ISO: 0,
@@ -80,7 +80,7 @@ class MessagesTest(unittest.TestCase):
         }).encode('utf-8'))
 
         # Then stream it to another v4l2 device
-        self.outpipe = gs.piepline(
+        self.outpipe = gs.pipeline(
             'udpsrc port=5001 ! application/x-rtp, payload=96 ! '
             'rtph264depay ! avdec_h264 ! videoconvert ! '
             'v4l2sink device=/dev/video1'
