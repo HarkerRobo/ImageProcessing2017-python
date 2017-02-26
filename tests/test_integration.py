@@ -40,6 +40,8 @@ class IntegrationTest(unittest.TestCase):
         debuggingThread.start()
         self.inpipe.set_state(Gst.State.PLAYING)
 
+        print(self.inpipe.get_state(Gst.CLOCK_TIME_NONE))
+
         # Then read images from that device and stream them over a udp
         # socket to localhost.
         self.streampipe = gs.pipeline(
