@@ -66,7 +66,19 @@ class IntegrationTest(unittest.TestCase):
 
         # Initialize some variables that will be populated later
         self.outpipe = None
-        self.cap = None
+        self.cap1 = None
+        self.cap2 = None
+
+    def test_input(self):
+        """Tests that the gstreamer process generates correct images."""
+        self.cap1 = cv2.VideoCapture(0)
+        _, im = self.cap1.read()
+
+        self.assertTrue(np.array_equal(im[0][0], [255, 255, 255]),
+                        'Top left pixel of image is not white')
+        self.assertTrue(np.array_equal(im[0][im.shape[1]-1], [255, 0, 0]),
+                        'Top right pixel of image is not blue')
+
 
     def test_works(self):
         """Test that the stream can be correctly read."""
@@ -87,8 +99,8 @@ class IntegrationTest(unittest.TestCase):
         )
         self.outpipe.set_state(Gst.State.PLAYING)
 
-        self.cap = cv2.VideoCapture(1)
-        _, im = self.cap.read()
+        self.cap2 = cv2.VideoCapture(1)
+        _, im = self.cap2.read()
 
         self.assertTrue(np.array_equal(im[0][0], [255, 255, 255]),
                         'Top left pixel of image is not white')
@@ -102,7 +114,8 @@ class IntegrationTest(unittest.TestCase):
         self.s.close()
         self.sock.close()
         self.outpipe.set_state(Gst.State.NULL)
-        self.cap.release()
+        self.cap1.release()
+        self.cap2.release()
 
 if __name__ == '__main__':
     unittest.main()
