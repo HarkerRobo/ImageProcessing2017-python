@@ -35,8 +35,8 @@ before_install:
     - "ls /dev/video*"
 
 install:
-    - "pip3 install -r requirements.txt"
-    - "pip3 install numpy opencv-python"
+    - "sudo pip3 install -r requirements.txt"
+    - "sudo pip3 install numpy opencv-python"
     - "ln -s /usr/lib/python3/dist-packages/gi $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)"
     - sudo cp $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi/_gi*) "$(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)/_gi.so"
     - "ls $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)"
