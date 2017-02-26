@@ -20,6 +20,7 @@ addons:
             - python3-gi
 
 before_install:
+    - "sudo apt-get install linux-headers-$(uname -r)"
     - "git clone https://github.com/umlaeute/v4l2loopback"
     - "cd v4l2loopback"
     - "make"
