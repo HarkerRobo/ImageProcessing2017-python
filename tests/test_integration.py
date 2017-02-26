@@ -88,7 +88,7 @@ class IntegrationTest(unittest.TestCase):
         self.outpipe.set_state(Gst.State.PLAYING)
 
         self.cap = cv2.VideoCapture(1)
-        im = self.cap.read()
+        _, im = self.cap.read()
 
         self.assertTrue(np.array_equal(im[0][0], [255, 255, 255]),
                         'Top left pixel of image is not white')
@@ -100,7 +100,7 @@ class IntegrationTest(unittest.TestCase):
         self.streampipe.set_state(Gst.State.NULL)
         # TODO: stop self.acpter
         self.s.close()
-        self.outpipe.set_state(Gst.STATE.NULL)
+        self.outpipe.set_state(Gst.State.NULL)
         self.cap.close()
 
 if __name__ == '__main__':
