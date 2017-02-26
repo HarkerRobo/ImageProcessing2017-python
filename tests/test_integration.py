@@ -100,8 +100,9 @@ class IntegrationTest(unittest.TestCase):
         self.streampipe.set_state(Gst.State.NULL)
         # TODO: stop self.acpter
         self.s.close()
+        self.sock.close()
         self.outpipe.set_state(Gst.State.NULL)
-        self.cap.close()
+        self.cap.release()
 
 if __name__ == '__main__':
     unittest.main()
