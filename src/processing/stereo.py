@@ -111,11 +111,10 @@ def process(left_img, right_img):
         print(reconstructed_point)
 
 
-
         # focal length is in camera matrix (fx)
     # Z = (b * f) / (x1 - x2)
     # b = distance between lens
-    # distance = (camera_dist_between_lenses*focal length)/(disparity)
+    # distance =  (camera_dist_between_lenses*focal length)/(disparity)
 
 
     # z = triangulation_constant / dispartity
