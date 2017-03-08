@@ -58,11 +58,13 @@ def calibrate(image_paths_left, image_paths_right):
 
 
     dict = {"left": {"camera_matirx": cameraMatrix1, "dist_coeffs": distCoeffs1},
-            "right": {"camera_matirx": cameraMatrix2, "dist_coeffs": distCoeffs2},
+            "right": {"camera_matirx":  cameraMatrix2, "dist_coeffs": distCoeffs2},
             "reproj_error": retval, "rot_matrix":R, "trans_matrix":T, "ess_matrix":E, "fund_matrix":F, "img_size":  (640,480)}
 
 
-    print(dict)
+    print(dict["left"]["camera_matirx"])
+    print(dict["right"]["camera_matirx"])
+
     with open('calibration.pickle', 'wb') as f:
         pickle.dump(dict, f)
     return dict
