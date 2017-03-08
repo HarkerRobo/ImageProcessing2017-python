@@ -120,6 +120,8 @@ def process(left_img, right_img):
 
     # z = triangulation_constant / dispartity
 
+    return reconstructed_points
+
 if __name__ == '__main__':
     print("Running main from stereo")
     cv2.waitKey(0)

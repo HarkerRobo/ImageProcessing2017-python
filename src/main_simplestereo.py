@@ -11,7 +11,7 @@ import numpy as np
 import config
 import networking
 import networking.messages as m
-from processing.stereo import process
+from processing.tapecontours import get_corners_from_image
 # Gst = gs.Gst
 
 if __name__ == '__main__':
@@ -40,9 +40,18 @@ if __name__ == '__main__':
         ipleft = np.rot90(ileft, 3)
         ipright = np.rot90(iright, 3)
 
-        points = process(ipleft, ipright)
-        message = m.create_message(m.TYPE_RESULTS, {m.FIELD_CORNERS: points})
-        networking.server.broadcast(sock, clis, message)
+        corners_left = np.concatenate(get_corners_from_image(ipleft, 1))
+        corners_right = np.concatenate(get_corners_from_image(ipright, 2))
+
+        if corners_left.shape[9] == 2 and corners_right.shape[0] == 2:
+            left_center = np.sum(corners_left, axis=0) / 8
+            right_center = np.sum(corners_right, axis=0) / 8
+
+            center = (left_center + right_center) / 2
+            xdisp = int(round(center - 240))
+
+            message = m.create_message(m.TYPE_SIMPLERESULTS, {m.FIELD_XDISP: xdisp})
+            networking.server.broadcast(sock, clis, message)
 
         if cv2.waitKey(1) == ord('q'):
             sock.close()

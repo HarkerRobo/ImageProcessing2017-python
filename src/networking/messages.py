@@ -22,6 +22,7 @@ TYPE_START_STREAM = 'start'
 TYPE_STOP_STREAM = 'stop'
 TYPE_ERROR = 'error'
 TYPE_RESULTS = 'results'
+TYPE_SIMPLERESULTS = 'simpleresults'
 
 # Fields
 FIELD_TYPE = 'type'
@@ -31,6 +32,7 @@ FIELD_ISO = 'iso'
 FIELD_SS = 'shutterspeed'
 FIELD_ERROR = 'message'
 FIELD_CORNERS = 'corners'
+FIELD_XDISP = 'xdisplacement'
 
 # Message schemas
 MESSAGES = {
@@ -46,6 +48,9 @@ MESSAGES = {
     },
     TYPE_RESULTS: {
         FIELD_CORNERS: list
+    },
+    TYPE_SIMPLERESULTS: {
+        FIELD_XDISP: int
     }
 }
 
