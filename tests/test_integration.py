@@ -88,8 +88,8 @@ class IntegrationTest(unittest.TestCase):
         self.assertTrue(np.array_equal(tlp, [235, 235, 235]),
                         'Top left pixel of image is not white (is {})'.format(tlp))
         trp = im[0][im.shape[1]-1]
-        self.assertTrue(np.array_equal(trp, [235, 0, 0]),
-                        'Top right pixel of image is not blue (is {}'.format(trp))
+        self.assertTrue(np.array_equal(trp, [239, 15, 16]),
+                        'Top right pixel of image is not blue (is {})'.format(trp))
 
         # Start the stream
         self.s.send(m.create_message('start', {
@@ -115,8 +115,8 @@ class IntegrationTest(unittest.TestCase):
         self.assertTrue(np.array_equal(tlp, [235, 235, 235]),
                         'Top left pixel of image is not white (is {})'.format(tlp))
         trp = im[0][im.shape[1]-1]
-        self.assertTrue(np.array_equal(trp, [235, 0, 0]),
-                        'Top right pixel of image is not blue (is {}'.format(trp))
+        self.assertTrue(np.array_equal(trp, [239, 15, 16]),
+                        'Top right pixel of image is not blue (is {})'.format(trp))
 
     def tearDown(self):
         self.inpipe.set_state(Gst.State.NULL)
