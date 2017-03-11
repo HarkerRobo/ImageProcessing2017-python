@@ -44,14 +44,15 @@ before_install:
 
 install:
     # OpenCV (adapted from https://github.com/emchristiansen/Billy/blob/master/.travis.yml)
+    # Note that cmake is run as root because the root user isn't inside a virtualenv, so
+    # running cmake as root will install the python wrappers outside the virtualenv
     - cd $HOME/opencv
     - >
         if [ ! -d build ]; then
         git clone https://github.com/opencv/opencv --depth=1 .;
         mkdir build;
         cd build;
-        sudo cmake # The root user isn't inside a virtualenv, so running cmake as root will install
-                   # the python wrappers outside the virtualenv
+        sudo cmake
         -D CMAKE_BUILD_TYPE=RELEASE
         -D CMAKE_INSTALL_PREFIX=/usr/local
         -D INSTALL_C_EXAMPLES=OFF
@@ -80,6 +81,7 @@ install:
     # Then cv2
     - ln -s $(readlink -f /usr/local/lib/python3*/site-packages/cv2.cpython*.so) $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)
     - sudo cp $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/cv2.cpython*.so) "$(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)/cv2.so"
+    - ls $(readlink -f /usr/local/lib/python3*/site-packages)
     - "ls $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)"
 
 script: sudo python3 -m unittest discover -s tests
