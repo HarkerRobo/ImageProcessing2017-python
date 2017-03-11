@@ -34,7 +34,7 @@ class IntegrationTest(unittest.TestCase):
 
     def setUp(self):
         # First stream a pattern of 7 bars of 100% intensity to a v4l2 device
-        self.inpipe = gs.pipeline('videotestsrc pattern=smpte100 ! jpegenc ! '
+        self.inpipe = gs.pipeline('videotestsrc pattern=smpte100 ! '
                                   'v4l2sink device=/dev/video0')
         debuggingThread = gs.MessagePrinter(self.inpipe)
         debuggingThread.start()
@@ -75,7 +75,6 @@ class IntegrationTest(unittest.TestCase):
         self.cap1 = None
         self.cap2 = None
 
-    # TODO: Make this test work
     def test_works(self):
         """Test that the stream can be correctly read."""
 
