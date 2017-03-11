@@ -12,6 +12,10 @@ python:
     - "3.6"
     - "3.6-dev"
 
+cache:
+    directories:
+        - $HOME/opencv
+
 addons:
     apt:
         packages:
@@ -40,13 +44,18 @@ before_install:
 
 install:
     # OpenCV (adapted from https://github.com/emchristiansen/Billy/blob/master/.travis.yml)
-    - git clone https://github.com/opencv/opencv --depth=1
-    - cd opencv
-    - mkdir build
-    - cd build
-    - cmake ..
-    - make -j4
+    - if [ ! -d /home/mlzboy/b2c2/shared/db ]; then
+        - git clone https://github.com/opencv/opencv --depth=1
+        - cd opencv
+        - mkdir build
+        - cd build
+        - cmake ..
+        - make -j4
+        - cd ../../
+    - fi
+    - cd opencv/build
     - sudo make -j4 install
+    - cd ../../
     # Everything else
     - "sudo pip3 install -U pip setuptools"
     - "sudo pip3 install -r requirements.txt"
