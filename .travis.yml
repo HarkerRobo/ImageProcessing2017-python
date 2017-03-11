@@ -44,16 +44,16 @@ before_install:
 
 install:
     # OpenCV (adapted from https://github.com/emchristiansen/Billy/blob/master/.travis.yml)
-    - if [ ! -d /home/mlzboy/b2c2/shared/db ]; then
-        - git clone https://github.com/opencv/opencv --depth=1
-        - cd opencv
-        - mkdir build
-        - cd build
-        - cmake ..
-        - make -j4
-        - cd ../../
+    - cd opencv
+    - if [ ! -d build ]; then
+    - git clone https://github.com/opencv/opencv --depth=1 .
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make -j4
+    - cd ../
     - fi
-    - cd opencv/build
+    - cd build
     - sudo make -j4 install
     - cd ../../
     # Everything else
