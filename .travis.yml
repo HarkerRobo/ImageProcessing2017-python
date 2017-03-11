@@ -50,7 +50,8 @@ install:
         git clone https://github.com/opencv/opencv --depth=1 .;
         mkdir build;
         cd build;
-        sudo cmake
+        sudo cmake # The root user isn't inside a virtualenv, so running cmake as root will install
+                   # the python wrappers outside the virtualenv
         -D CMAKE_BUILD_TYPE=RELEASE
         -D CMAKE_INSTALL_PREFIX=/usr/local
         -D INSTALL_C_EXAMPLES=OFF
@@ -67,6 +68,7 @@ install:
         fi
     - cd build
     - sudo make -j4 install
+    - sudo cp $(readlink -f /usr/local/lib/python*/site-packages/cv2.cpython*.so) "$(readlink -f /usr/local/lib/python*/site-packages)/cv2.so""
     - cd $TRAVIS_BUILD_DIR
     # Everything else
     - "sudo pip3 install -U pip setuptools"
