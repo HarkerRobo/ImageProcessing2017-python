@@ -68,13 +68,18 @@ install:
         fi
     - cd build
     - sudo make -j4 install
-    - sudo cp $(readlink -f /usr/local/lib/python3*/site-packages/cv2.cpython*.so) "$(readlink -f /usr/local/lib/python3*/site-packages)/cv2.so"
     - cd $TRAVIS_BUILD_DIR
     # Everything else
     - "sudo pip3 install -U pip setuptools"
     - "sudo pip3 install -r requirements.txt"
+    # Copy modules installed outside virtualenv to inside virtualenv
+    # First gi
     - "ln -s /usr/lib/python3/dist-packages/gi $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)"
     - sudo cp $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi/_gi*) "$(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)/_gi.so"
     - "ls $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/gi)"
+    # Then cv2
+    - ln -s $(readlink -f /usr/local/lib/python3*/site-packages/cv2.cpython*.so) $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)
+    - sudo cp $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/cv2.cpython*.so) "$(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)/cv2.so"
+    - "ls $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)"
 
 script: sudo python3 -m unittest discover -s tests
