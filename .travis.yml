@@ -46,7 +46,7 @@ install:
     # OpenCV (adapted from https://github.com/emchristiansen/Billy/blob/master/.travis.yml)
     - cd $HOME/opencv
     - >
-        if [ ! -d build ]; then;
+        if [ ! -d build ]; then
         git clone https://github.com/opencv/opencv --depth=1 .;
         mkdir build;
         cd build;
