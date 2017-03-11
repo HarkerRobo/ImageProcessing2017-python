@@ -84,10 +84,12 @@ class IntegrationTest(unittest.TestCase):
         stat, im = self.cap1.read()
 
         self.assertTrue(stat, 'OpenCV could not read from input stream')
-        self.assertTrue(np.array_equal(im[0][0], [255, 255, 255]),
-                        'Top left pixel of image is not white')
-        self.assertTrue(np.array_equal(im[0][im.shape[1]-1], [255, 0, 0]),
-                        'Top right pixel of image is not blue')
+        tlp = im[0][0]
+        self.assertTrue(np.array_equal(tlp, [255, 255, 255]),
+                        'Top left pixel of image is not white (is {})'.format(tlp))
+        trp = im[0][im.shape[1]-1]
+        self.assertTrue(np.array_equal(trp, [255, 0, 0]),
+                        'Top right pixel of image is not blue (is {}'.format(trp))
 
         # Start the stream
         self.s.send(m.create_message('start', {
@@ -106,12 +108,15 @@ class IntegrationTest(unittest.TestCase):
         self.outpipe.set_state(Gst.State.PLAYING)
 
         self.cap2 = cv2.VideoCapture(1)
-        _, im = self.cap2.read()
+        stat, im = self.cap2.read()
 
-        self.assertTrue(np.array_equal(im[0][0], [255, 255, 255]),
-                        'Top left pixel of image is not white')
-        self.assertTrue(np.array_equal(im[0][im.shape[1]-1], [255, 0, 0]),
-                        'Top right pixel of image is not blue')
+        self.assertTrue(stat, 'OpenCV could not read from input stream')
+        tlp = im[0][0]
+        self.assertTrue(np.array_equal(tlp, [255, 255, 255]),
+                        'Top left pixel of image is not white (is {})'.format(tlp))
+        trp = im[0][im.shape[1]-1]
+        self.assertTrue(np.array_equal(trp, [255, 0, 0]),
+                        'Top right pixel of image is not blue (is {}'.format(trp))
 
     def tearDown(self):
         self.inpipe.set_state(Gst.State.NULL)
