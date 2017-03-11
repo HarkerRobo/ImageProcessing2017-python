@@ -81,6 +81,7 @@ install:
     # Then cv2
     - ln -s $(readlink -f /usr/local/lib/python3*/site-packages/cv2.cpython*.so) $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)
     - sudo cp $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/cv2.cpython*.so) "$(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)/cv2.so"
+    - sudo cp $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages/cv2.cpython*.so) /usr/lib/python3/dist-packages/cv2.so
     - ls $(readlink -f /usr/local/lib/python3*/site-packages)
     - "ls $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)"
 
