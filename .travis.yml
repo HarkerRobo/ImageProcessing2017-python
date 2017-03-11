@@ -68,7 +68,7 @@ install:
         fi
     - cd build
     - sudo make -j4 install
-    - sudo cp $(readlink -f /usr/local/lib/python*/site-packages/cv2.cpython*.so) "$(readlink -f /usr/local/lib/python*/site-packages)/cv2.so"
+    - sudo cp $(readlink -f /usr/local/lib/python3*/site-packages/cv2.cpython*.so) "$(readlink -f /usr/local/lib/python3*/site-packages)/cv2.so"
     - cd $TRAVIS_BUILD_DIR
     # Everything else
     - "sudo pip3 install -U pip setuptools"
