@@ -50,7 +50,18 @@ install:
         git clone https://github.com/opencv/opencv --depth=1 .;
         mkdir build;
         cd build;
-        cmake ..;
+        cmake
+            -D CMAKE_BUILD_TYPE=RELEASE
+            -D CMAKE_INSTALL_PREFIX=/usr/local
+            -D INSTALL_C_EXAMPLES=OFF
+            -D BUILD_opencv_java=OFF
+            -D -D BUILD_EXAMPLES=OFF
+            -D BUILD_TESTS=OFF
+            -D BUILD_PERF_TESTS=OFF
+            -D BUILD_DOCS=OFF
+            -D BUILD_opencv_python2=OFF
+            -D BUILD_opencv_python3=ON
+            ..;
         make -j4;
         cd ../;
         fi
