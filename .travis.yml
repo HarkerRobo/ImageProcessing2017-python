@@ -85,4 +85,4 @@ install:
     - ls $(readlink -f /usr/local/lib/python3*/site-packages)
     - "ls $(readlink -f $VIRTUAL_ENV/lib/python*/site-packages)"
 
-script: python3 -m unittest discover -s tests
+script: sudo python3 -m unittest discover -s tests
