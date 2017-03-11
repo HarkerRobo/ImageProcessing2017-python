@@ -50,7 +50,7 @@ install:
         git clone https://github.com/opencv/opencv --depth=1 .;
         mkdir build;
         cd build;
-        cmake
+        sudo cmake
         -D CMAKE_BUILD_TYPE=RELEASE
         -D CMAKE_INSTALL_PREFIX=/usr/local
         -D INSTALL_C_EXAMPLES=OFF
