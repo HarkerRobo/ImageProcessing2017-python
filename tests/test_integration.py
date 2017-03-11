@@ -110,11 +110,13 @@ class IntegrationTest(unittest.TestCase):
         stat, im = self.cap2.read()
 
         self.assertTrue(stat, 'OpenCV could not read from input stream')
+        # The encoding will make the colors off from what they should
+        # be, so white won't be exactly white
         tlp = im[0][0]
-        self.assertTrue(np.array_equal(tlp, [255, 255, 255]),
+        self.assertTrue(np.array_equal(tlp, [235, 235, 235]),
                         'Top left pixel of image is not white (is {})'.format(tlp))
         trp = im[0][im.shape[1]-1]
-        self.assertTrue(np.array_equal(trp, [255, 0, 0]),
+        self.assertTrue(np.array_equal(trp, [239, 15, 16]),
                         'Top right pixel of image is not blue (is {})'.format(trp))
 
     def tearDown(self):
