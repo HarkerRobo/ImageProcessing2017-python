@@ -54,7 +54,9 @@ def create_gst_handler(pipeline, src_name=None, valve_name=None,
 
     def on_start(message):
         """Handle a message to start the GStreamer pipeline."""
-        logging.debug('Starting video stream')
+        logging.debug('Starting video stream, {}:{} with ISO {} and SS {}'
+                      .format(message[m.FIELD_HOST], message[m.FIELD_PORT],
+                              message[m.FIELD_ISO], message[m.FIELD_SS]))
         if src_name is not None:
             src = pipeline.get_by_name(src_name)
             src.set_property('iso', message[m.FIELD_ISO])
