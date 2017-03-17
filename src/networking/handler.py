@@ -20,12 +20,10 @@ Stop streaming messages: Stops the running GStreamer pipeline if any
 import logging
 from . import messages as m
 
-logger = logging.getLogger(__name__)
-
 # Generic handlers
 def on_error(message):
     """Handle an error message sent to the socket."""
-    logger.error('Got error from socket: {}'.format(message[m.FIELD_ERROR]))
+    logging.error('Got error from socket: {}'.format(message[m.FIELD_ERROR]))
 
 def create_gst_handler(pipeline, src_name=None, valve_name=None,
                        udp_name=None):
@@ -50,13 +48,13 @@ def create_gst_handler(pipeline, src_name=None, valve_name=None,
 
     def on_stop(_):
         """Handle a message to stop the GStreamer pipeline."""
-        logger.debug('Stopping video stream')
+        logging.debug('Stopping video stream')
         if valve_name is not None:
             pipeline.get_by_name(valve_name).set_property('drop', True)
 
     def on_start(message):
         """Handle a message to start the GStreamer pipeline."""
-        logger.debug('Starting video stream')
+        logging.debug('Starting video stream')
         if src_name is not None:
             src = pipeline.get_by_name(src_name)
             src.set_property('iso', message[m.FIELD_ISO])

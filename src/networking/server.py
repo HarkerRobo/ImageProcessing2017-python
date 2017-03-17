@@ -14,8 +14,6 @@ PORT = 6000
 BACKLOG = 5 # Maximum number of clients
 SIZE = 1024 # Maximum message size
 
-logger = logging.getLogger(__name__)
-
 def create_socket_and_client_list(host=HOST, port=PORT, backlog=BACKLOG):
     """
     Create a socket that listens on the port and host specified as
@@ -68,7 +66,7 @@ def AcceptClients(server_socket, clients, on_new_message):
                             x.close()
                             clients.remove(x)
                     except UnicodeDecodeError:
-                        logger.error('Unicode error')
+                        logging.error('Unicode error')
                     except ConnectionResetError:
                         pass
         except:
