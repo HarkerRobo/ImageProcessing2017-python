@@ -136,7 +136,7 @@ class H264RaspiCam(PipelinePart):
             exp_str = 'exposure-mode={expmode}'
         return super().__new__(cls, (
             'rpicamsrc name={src_name} preview=false '
-            'bitrate={bitrate} quantisation-parameter={quant_param}'
+            'bitrate={bitrate} quantisation-parameter={quant_param} '
             + awb_str
             + exp_str +
             ' ! video/x-h264, width={width}, height={height}, profile=high, '
