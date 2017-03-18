@@ -77,15 +77,22 @@ def process(left_img, right_img):
 
     reconstructed_points = []
     point_pairs = zip(list(corners_left), list(corners_right))
+    average_disp = 0
+    average_x = 0
     for point_pair in point_pairs:
+        # print(point_pair)
+        sub_average = (point_pair[0][0] + point_pair[1][0])/2
+        average_x = average_x + sub_average
+        disparity = abs(point_pair[0][0] - point_pair[1][0])
+        average_disp = average_disp + disparity
+    disparity = average_disp/8
+    average_x = average_x/8
+    # print(average_x)
+    print(average_x-240)
+    # print("Disparity: {}".format(disparity))
+    distance = (7.25*585)/disparity
+    print("Dist: " + str(distance))
 
-        disparity = point_pair[0][0] - point_pair[1][0]
-        print("Disparity: {}".format(disparity))
-        distance = (7.25*585)/disparity
-        print("Dist: " + str(distance))
-        reconstructed_point = (point_pair[0][0], point_pair[0][1], disparity)
-        reconstructed_points.append(reconstructed_point)
-        print(reconstructed_point)
 
 
         # focal length is in camera matrix (fx)
@@ -96,7 +103,7 @@ def process(left_img, right_img):
 
     # z = triangulation_constant / dispartity
 
-    return reconstructed_points
+    return (distance, average_x)
 
 if __name__ == '__main__':
     print("Running main from stereo")
