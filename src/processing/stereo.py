@@ -87,11 +87,13 @@ def process(left_img, right_img):
         average_disp = average_disp + disparity
     disparity = average_disp/8
     average_x = average_x/8
+    average_x = average_x - 240
+    average_x = - average_x
     # print(average_x)
-    print(average_x-240)
+    # print(average_x-240)
     # print("Disparity: {}".format(disparity))
     distance = (7.25*585)/disparity
-    print("Dist: " + str(distance))
+    # print("Dist: " + str(distance))
 
 
 
