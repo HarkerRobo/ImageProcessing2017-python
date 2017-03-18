@@ -181,7 +181,7 @@ class H264Stream(PipelinePart):
             # Convert to rtp packets
             'rtph264pay pt=96 config-interval=5 ! '
             # Stream over udp
-            'udpsink name={udp_name} host={host} port={port}'
+            'udpsink name={udp_name} host={host} port={port} async=false'
         ).format(**merge_defaults(kwargs)))
 
 class SHMSink(PipelinePart):
