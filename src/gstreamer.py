@@ -339,10 +339,10 @@ class MessagePrinter(threading.Thread):
     MESSAGE_TYPES = (Gst.MessageType.STATE_CHANGED | Gst.MessageType.ERROR |
                      Gst.MessageType.EOS)
 
-    def __init__(self, pipeline):
+    def __init__(self, pipe):
         threading.Thread.__init__(self)
         self._stop = threading.Event()
-        self.pipeline = pipeline
+        self.pipeline = pipe
 
     def run(self):
         """Start the thread."""
