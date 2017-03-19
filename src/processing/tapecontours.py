@@ -265,8 +265,14 @@ def get_tape_contours_and_corners(mask, debug_img=None):
         y_range = TARGET_HEIGHT * percent_size * 1.8 / 2
 
         if debug_img is not None:
-            cv2.rectangle(debug_img, (int(tcx-x_range), int(tcy-y_range)), (int(tcx-asqrt*MIN_PAD), int(tcy+y_range)), (0, 150, 0), 1)
-            cv2.rectangle(debug_img, (int(tcx+asqrt*MIN_PAD), int(tcy-y_range)), (int(tcx+x_range), int(tcy+y_range)), (0, 150, 0), 1)
+            cv2.rectangle(debug_img,
+                          (int(tcx-x_range), int(tcy-y_range)),
+                          (int(tcx-asqrt*MIN_PAD), int(tcy+y_range)),
+                          (0, 150, 0), 1)
+            cv2.rectangle(debug_img,
+                          (int(tcx+asqrt*MIN_PAD), int(tcy-y_range)),
+                          (int(tcx+x_range), int(tcy+y_range)),
+                          (0, 150, 0), 1)
 
         rest_left = []
         rest_right = []

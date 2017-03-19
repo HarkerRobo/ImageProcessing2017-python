@@ -3,9 +3,9 @@ This program serves a test stream that can be used for debugging
 networking and streaming.
 """
 
-import logging
-import logging.config
-import time
+# import logging
+# import logging.config
+# import time
 import random
 import threading
 import config
@@ -23,8 +23,8 @@ def randomcorners():
     w = int(gs.DEFAULTS['width'] * random.random() * 0.2)
     h = int(gs.DEFAULTS['height'] * random.random() * 0.2)
 
-    crns = [(cx-w, cy-h), (cx+w, cy-h), (cx+w, cy+h), (cx-w, cy+h)]
-    random.shuffle(crns)
+    rcrns = [(cx-w, cy-h), (cx+w, cy-h), (cx+w, cy+h), (cx-w, cy+h)]
+    random.shuffle(rcrns)
 
     return crns
 

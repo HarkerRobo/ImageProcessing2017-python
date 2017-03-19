@@ -76,6 +76,7 @@ if __name__ == '__main__':
     sock, clis = create_socket_and_client_list()
 
     def new_message(_, data):
+        """Handle a new message from the server."""
         print('Got {}'.format(data))
         broadcast(sock, clis, data)
 
