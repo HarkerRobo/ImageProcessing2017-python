@@ -1,15 +1,11 @@
 """
-This program serves streams from the camera as well as processing them
-and sending results back to clients connected to a server.
+This program tests stereo vision.
 """
 
-import logging
-import logging.config
-import threading
 import cv2
 import numpy as np
 
-from src.processing.stereo import process
+from processing.stereo import process
 # Gst = gs.Gst
 
 if __name__ == '__main__':
