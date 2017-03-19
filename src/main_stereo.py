@@ -40,7 +40,7 @@ if __name__ == '__main__':
         ipleft = np.rot90(ileft, 3)
         ipright = np.rot90(iright, 3)
 
-        points = process(ipleft, ipright)
+        points = process(ipleft, ipright, False)
         message = m.create_message(m.TYPE_RESULTS, {m.FIELD_CORNERS: points})
         networking.server.broadcast(sock, clis, message)
 

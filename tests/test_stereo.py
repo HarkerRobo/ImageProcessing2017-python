@@ -24,7 +24,7 @@ if __name__ == '__main__':
         ipleft = np.rot90(ileft, 3)
         ipright = np.rot90(iright, 3)
 
-        points = process(ipleft, ipright)
+        points = process(ipleft, ipright, True)
 
 
         if cv2.waitKey(1) == ord('q'):

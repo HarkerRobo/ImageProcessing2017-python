@@ -8,6 +8,6 @@ while True:
 	_, i1 = c1.read()
 	_, i2 = c2.read()
 
-	stereo.process(i1[::-1], i2[::-1])
+	stereo.process(i1[::-1], i2[::-1], True)
 	print("blerb")
 	cv2.waitKey(1)

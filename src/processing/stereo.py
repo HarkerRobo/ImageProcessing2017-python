@@ -33,7 +33,7 @@ camera_dist = 0
 with open("src/processing/calibration.pickle", "rb") as p:
     calib_dict = pickle.load(p)
 
-def process(left_img, right_img):
+def process(left_img, right_img, show_image=False):
 
     # R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(cameraMatrix1=calib_dict["left"]["camera_matirx"], distCoeffs1=calib_dict["left"]["dist_coeffs"],
     #                                                  cameraMatrix2=calib_dict["right"]["camera_matirx"], distCoeffs2=calib_dict["right"]["dist_coeffs"],
@@ -65,8 +65,8 @@ def process(left_img, right_img):
 
 
     try:
-        corners_left = np.concatenate(tapecontours.get_corners_from_image(left_img, 1))
-        corners_right = np.concatenate(tapecontours.get_corners_from_image(right_img, 2))
+        corners_left = np.concatenate(tapecontours.get_corners_from_image(left_img, 1, show_image=show_image))
+        corners_right = np.concatenate(tapecontours.get_corners_from_image(right_img, 2, show_image=show_image))
     except Exception as e:
         return
     if len(corners_left) != 8 or len(corners_right) != 8:
@@ -110,4 +110,4 @@ def process(left_img, right_img):
 if __name__ == '__main__':
     print("Running main from stereo")
     cv2.waitKey(0)
-    process(None, None)
+    process(None, None, True)
