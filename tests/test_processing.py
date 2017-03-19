@@ -71,6 +71,7 @@ class ImageTests(unittest.TestCase):
         Test that tapecontours.get_corners_from_image returns the
         correct corners for a set of sample images.
         """
+        currentdir = os.path.dirname(os.path.abspath(__file__))
         markeddir = os.path.join(currentdir, 'testImages/marked')
         origdir = os.path.join(currentdir, 'testImages/original')
 
