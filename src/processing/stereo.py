@@ -30,7 +30,7 @@ camera_dist = 0
 # with open("processing/calibration.pickle", "rb") as p:
 #     calib_dict = pickle.load(p)
 
-with open(r"C:\Users\Austin\PycharmProjects2\ImageProcessing2017-python\src\processing\calibration.pickle", "rb") as p:
+with open("src/processing/calibration.pickle", "rb") as p:
     calib_dict = pickle.load(p)
 
 def process(left_img, right_img):

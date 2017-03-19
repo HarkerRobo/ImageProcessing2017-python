@@ -14,8 +14,7 @@ from src.processing.stereo import process
 
 if __name__ == '__main__':
     cleft = cv2.VideoCapture(0)
-    cright = cv2.VideoCapture(2)
-
+    cright = cv2.VideoCapture(1)
 
 
     while True:
