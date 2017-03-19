@@ -6,12 +6,7 @@ import os
 import sys
 import unittest
 
-# Add the parent directory to the path so other modules can be imported
-currentdir = os.path.dirname(os.path.abspath(__file__))
-srcdir = os.path.join(os.path.dirname(currentdir), 'src')
-sys.path.insert(0, srcdir)
-
-from networking import messages
+from src.networking import messages
 
 class MessagesTest(unittest.TestCase):
     """

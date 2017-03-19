@@ -6,24 +6,17 @@ case that you don't have a Rasbperry Pi but still want to say "it
 launches!".
 """
 
-import os
 import socket
-import sys
 import threading
 import unittest
 
 import cv2
 import numpy as np
 
-# Add the parent directory to the path so other modules can be imported
-currentdir = os.path.dirname(os.path.abspath(__file__))
-srcdir = os.path.join(os.path.dirname(currentdir), 'src')
-sys.path.insert(0, srcdir)
-
-import gstreamer as gs
-import networking
-import networking.messages as m
-from processing.tapecontours import get_corners_from_image
+from src import gstreamer as gs
+from src import networking
+from src.networking import messages as m
+from src.processing.tapecontours import get_corners_from_image
 Gst = gs.Gst
 
 class IntegrationTest(unittest.TestCase):

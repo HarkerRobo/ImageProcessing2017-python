@@ -2,16 +2,9 @@
 This file contains tests for networking/messages.py.
 """
 
-import os
-import sys
 import unittest
 
-# Add the parent directory to the path so other modules can be imported
-currentdir = os.path.dirname(os.path.abspath(__file__))
-srcdir = os.path.join(os.path.dirname(currentdir), 'src')
-sys.path.insert(0, srcdir)
-
-import config
+from src import config
 
 class ConfigTest(unittest.TestCase):
     """
