@@ -1,4 +1,4 @@
 [MASTER]
 
-disable=C0103
+disable=C0103,W1202
 extension-pkg-whitelist=cv2,numpy,ruamel.yaml,gi
