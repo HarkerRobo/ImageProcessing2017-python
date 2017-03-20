@@ -81,6 +81,7 @@ def process(left_img, right_img, show_image=False):
     average_x = 0
     for point_pair in point_pairs:
         # print(point_pair)
+        print(point_pair[0][1])
         sub_average = (point_pair[0][0] + point_pair[1][0])/2
         average_x = average_x + sub_average
         disparity = abs(point_pair[0][0] - point_pair[1][0])
@@ -94,6 +95,7 @@ def process(left_img, right_img, show_image=False):
     # print("Disparity: {}".format(disparity))
     distance = (7.25*585)/disparity
     # print("Dist: " + str(distance))
+    true_dist = y = 1.8174*distance - 8.1707
 
 
 
@@ -105,7 +107,7 @@ def process(left_img, right_img, show_image=False):
 
     # z = triangulation_constant / dispartity
 
-    return (distance, average_x)
+    return (true_dist, average_x)
 
 if __name__ == '__main__':
     print("Running main from stereo")
