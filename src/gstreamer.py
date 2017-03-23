@@ -47,11 +47,11 @@ gi.require_version('Gst', '1.0')
 from gi.repository import Gst
 Gst.init(None)
 
-def delete_socket():
+def delete_socket(socket_path=SOCKET_PATH):
     """Delete the file that is used for communication for the shared
     memory location."""
     try:
-        os.remove(SOCKET_PATH)
+        os.remove(socket_path)
     except FileNotFoundError:
         pass
 
