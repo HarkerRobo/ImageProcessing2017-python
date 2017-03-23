@@ -23,6 +23,7 @@ DEFAULTS = {
     'bitrate': 1000000, # 1 Mbps (after h.264 encoding)
     'quant_param': 0, # Quantisation parameter - higher is lower quality, 0=off
     'framerate': 15,
+    'device': '/dev/video0',
     'host': '127.0.0.1',
     'port': 5001,
     'iso': 100,
@@ -76,11 +77,11 @@ class Webcam(PipelinePart):
     supports v4l2 and outputs raw video.
 
     The optional keyword arguments taken are as follows: width, height,
-    framerate
+    framerate, device
     """
     def __new__(cls, **kwargs):
         return super().__new__(cls, (
-            'v4l2src name={src_name} ! video/x-raw,width={width},'
+            'v4l2src name={src_name} device={device} ! video/x-raw,width={width},'
             'height={height},framerate={framerate}/1'
         ).format(**merge_defaults(kwargs)))
 
