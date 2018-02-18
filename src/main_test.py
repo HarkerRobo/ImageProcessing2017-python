@@ -26,7 +26,7 @@ def randomcorners():
     rcrns = [(cx-w, cy-h), (cx+w, cy-h), (cx+w, cy+h), (cx-w, cy+h)]
     random.shuffle(rcrns)
 
-    return crns
+    return rcrns
 
 if __name__ == '__main__':
     conf = config.configfor('Vision')
@@ -36,11 +36,11 @@ if __name__ == '__main__':
 
     pipeline = gs.pipeline(
         gs.TestSrc() + gs.H264Video(h264encoder='x264enc') +
-        gs.Tee(
-            't',
-            gs.Valve('valve') + gs.H264Stream(port=5003, host='localhost'),
-            gs.TSFile(gs.ts_filename(), False)
-        )
+        #gs.Tee(
+        #    't',
+            gs.Valve('valve') + gs.H264Stream(port=5805, host='localhost')#,
+        #    gs.TSFile(gs.ts_filename(), False)
+        #)
     )
     pipeline.set_state(Gst.State.PLAYING)
 

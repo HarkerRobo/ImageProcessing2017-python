@@ -66,10 +66,10 @@ class PipelinePart(str):
     """
 
     def __add__(self, part):
-        return str(self) + ' ! ' + str(part)
+        return PipelinePart(str(self) + ' ! ' + str(part))
 
     def __radd__(self, part):
-        return str(part) + ' ! ' + str(self)
+        return PipelinePart(str(part) + ' ! ' + str(self))
 
 class Webcam(PipelinePart):
     """
