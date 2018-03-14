@@ -30,7 +30,7 @@ if __name__ == '__main__':
                         'pipe_src.vidsrc ! queue ! video/x-h264,width=1280,height=720,framerate=30/1 '
                         ).format(camera)) + gs.Valve('valve') + gs.Tee('tee',
                             gs.H264Stream(port=5002), # Default to port 5002
-                            gs.TSFile(gs.ts_filename(), True)
+                            gs.TSFile('/mnt/usb/video/' + gs.ts_filename(), True)
     )
 
     # Alternative:
