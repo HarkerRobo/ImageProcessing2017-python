@@ -245,7 +245,7 @@ class TSFile(PipelinePart):
     A GStreamer pipeline part that dumps received video data into an ts
     container.
 
-    This class takes two parameters: a requried filename to dump the
+    This class takes two parameters: a required filename to dump the
     video into and an optional boolean of whether to append video to the
     video file, which defaults to True.
     """
@@ -290,8 +290,8 @@ def make_command_line_parsable(caps):
     parenthesis (e.g. width=(int)320). This method returns that string,
     but without the type and parenthesis.
 
-    One could just use regex to find all ocurrences of characters
-    surrounded in paranthesis, but that would run into problems if the
+    One could just use regex to find all occurrences of characters
+    surrounded in parentheses, but that would run into problems if the
     enclosed strings contained parenthesis.
     """
 
@@ -334,7 +334,7 @@ def print_message(message):
         logger.error('Unexpected message of type {} received.'.format(m_type))
 
 class MessagePrinter(threading.Thread):
-    """Thread that coninously queries the pipeline's bus for messages,
+    """Thread that continuously queries the pipeline's bus for messages,
     printing them to stdout.
     """
     MESSAGE_TYPES = (Gst.MessageType.STATE_CHANGED | Gst.MessageType.ERROR |
