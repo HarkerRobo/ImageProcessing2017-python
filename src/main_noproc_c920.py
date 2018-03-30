@@ -9,6 +9,7 @@ import time
 import config
 import gstreamer as gs
 import networking
+import socket
 Gst = gs.Gst
 
 if __name__ == '__main__':
@@ -21,6 +22,14 @@ if __name__ == '__main__':
     logging.config.dictConfig(conf.logging)
     logger = logging.getLogger(__name__)
 
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(('0.0.0.0', 5806));
+    s.listen(1)
+    conn, _ = s.accept()
+    logger.debug('Got incoming time socket connection')
+    time = conn.recv(200)
+    logger.info('Got time %s', time)
+
     pipeline = gs.pipeline(
         # gs.PipelinePart('v4l2src device=/dev/video0 name=pipe_src ! video/x-h264,width=1280,height=720,framerate=15/1,profile=baseline') + gs.H264Stream(port=5002) # Default to port 5002
         gs.PipelinePart(('uvch264src device=/dev/video{} name=pipe_src auto_start=true initial-bitrate=1500000 '
@@ -30,7 +39,7 @@ if __name__ == '__main__':
                         'pipe_src.vidsrc ! queue ! video/x-h264,width=1280,height=720,framerate=30/1 '
                         ).format(camera)) + gs.Valve('valve') + gs.Tee('tee',
                             gs.H264Stream(port=5002), # Default to port 5002
-                            gs.TSFile('/mnt/usb/video/' + gs.ts_filename(), True)
+                            gs.PipelinePart('filesink append=true location=/mnt/usb/video/' + gs.ts_filename()))
     )
 
     # Alternative:
